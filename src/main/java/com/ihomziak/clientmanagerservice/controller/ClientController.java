@@ -26,7 +26,7 @@ public class ClientController {
 
     @PostMapping("/clients")
     public ResponseEntity<ClientResponseDTO> addClient(@RequestBody @Valid ClientRequestDTO clientRequestDTO) {
-        return ResponseEntity.status(HttpStatus.CREATED).body(this.clientService.save(clientRequestDTO));
+        return ResponseEntity.status(HttpStatus.CREATED).body(this.clientService.createClient(clientRequestDTO));
     }
 
     @GetMapping("/clients/{uuid}")
@@ -46,6 +46,6 @@ public class ClientController {
 
     @PatchMapping("/clients/update")
     public ResponseEntity<ClientResponseDTO> updateClient(@RequestBody @Valid ClientRequestDTO clientRequestDTO) {
-        return ResponseEntity.status(HttpStatus.ACCEPTED).body(this.clientService.update(clientRequestDTO));
+        return ResponseEntity.status(HttpStatus.ACCEPTED).body(this.clientService.updateClient(clientRequestDTO));
     }
 }

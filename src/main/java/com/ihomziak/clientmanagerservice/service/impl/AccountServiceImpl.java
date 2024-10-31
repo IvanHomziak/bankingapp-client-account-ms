@@ -20,6 +20,9 @@ import lombok.extern.slf4j.Slf4j;
 import org.apache.kafka.clients.consumer.ConsumerRecord;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Isolation;
+import org.springframework.transaction.annotation.Propagation;
+import org.springframework.transaction.annotation.Transactional;
 
 import java.time.LocalDateTime;
 import java.util.ArrayList;
@@ -46,6 +49,7 @@ public class AccountServiceImpl implements AccountService {
     }
 
     @Override
+    @Transactional
     public AccountResponseDTO createCheckingAccount(AccountRequestDTO accountRequestDTO) {
         int maxAccountNumberOfCheckingType = 2;
         Optional<Client> client = this.clientRepository.findClientByUUID(accountRequestDTO.getClientUUID());
@@ -78,6 +82,7 @@ public class AccountServiceImpl implements AccountService {
     }
 
     @Override
+    @Transactional
     public AccountInfoDTO deleteAccount(String uuid) {
         Optional<Account> account = this.accountRepository.findAccountByUUID(uuid);
 
@@ -89,6 +94,7 @@ public class AccountServiceImpl implements AccountService {
     }
 
     @Override
+    @Transactional
     public AccountResponseDTO updateAccount(AccountRequestDTO accountRequestDTO) {
         Optional<Account> account = this.accountRepository.findAccountByUUID(accountRequestDTO.getClientUUID());
         if (account.isEmpty()) {
@@ -125,6 +131,7 @@ public class AccountServiceImpl implements AccountService {
     }
 
     @Override
+    @Transactional
     public List<AccountResponseDTO> findAllAccountsByClientUUID(String uuid) {
         List<Account> accountList = this.accountRepository.findAccountsByClientUUID(uuid);
         List<AccountResponseDTO> accountResponseDTOList = new ArrayList<>();
@@ -143,6 +150,7 @@ public class AccountServiceImpl implements AccountService {
         return mapper.accountToAccountInfoDto(account.get());
     }
 
+    @Transactional
     public void processTransactionEvent(ConsumerRecord<Integer, String> consumerRecord) throws JsonProcessingException {
 
         TransactionRequestDTO transactionRequestDTO = objectMapper.readValue(consumerRecord.value(), TransactionRequestDTO.class);

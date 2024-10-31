@@ -81,7 +81,7 @@ public class ClientControllerTest {
 
     @Test
     public void addClient_ShouldReturnCreatedStatus() throws Exception {
-        when(clientService.save(any(ClientRequestDTO.class))).thenReturn(clientResponseDTO);
+        when(clientService.createClient(any(ClientRequestDTO.class))).thenReturn(clientResponseDTO);
 
         mockMvc.perform(post("/api/clients")
                 .contentType(MediaType.APPLICATION_JSON)
@@ -169,7 +169,7 @@ public class ClientControllerTest {
     @Test
     public void updateClient_ShouldReturnClientResponseDTO_WhenClientExists() throws Exception {
 
-        when(clientService.update(any(ClientRequestDTO.class))).thenReturn(clientResponseDTO);
+        when(clientService.updateClient(any(ClientRequestDTO.class))).thenReturn(clientResponseDTO);
 
         mockMvc.perform(patch("/api/clients/update")
                         .contentType(MediaType.APPLICATION_JSON)

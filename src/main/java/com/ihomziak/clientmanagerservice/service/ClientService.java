@@ -10,11 +10,11 @@ public interface ClientService {
 
     List<ClientsInfoDTO> findAll();
 
-    ClientResponseDTO save(ClientRequestDTO client);
+    ClientResponseDTO createClient(ClientRequestDTO client);
 
     ClientResponseDTO deleteByUUID(String uuid);
 
-    ClientResponseDTO update(ClientRequestDTO clientRequestDTO);
+    ClientResponseDTO updateClient(ClientRequestDTO clientRequestDTO);
 
     ClientResponseDTO findClientByUUID(String uuid);
 }

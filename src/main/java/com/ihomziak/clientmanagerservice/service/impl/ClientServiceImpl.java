@@ -13,6 +13,7 @@ import com.ihomziak.clientmanagerservice.mapper.impl.MapStructMapperImpl;
 import com.ihomziak.clientmanagerservice.service.ClientService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
 
 import java.time.LocalDateTime;
 import java.util.*;
@@ -32,6 +33,7 @@ public class ClientServiceImpl implements ClientService {
     }
 
     @Override
+    @Transactional
     public List<ClientsInfoDTO> findAll() {
         List<Client> clients = clientRepository.findAll();
         if (clients.isEmpty()) {
@@ -41,7 +43,8 @@ public class ClientServiceImpl implements ClientService {
     }
 
     @Override
-    public ClientResponseDTO save(ClientRequestDTO clientRequestDTO) {
+    @Transactional
+    public ClientResponseDTO createClient(ClientRequestDTO clientRequestDTO) {
         if (this.clientRepository.findClientByTaxNumber(clientRequestDTO.getTaxNumber()).isPresent()) {
             throw new ClientAlreadyExistException("Client already exist");
         }
@@ -76,7 +79,8 @@ public class ClientServiceImpl implements ClientService {
     }
 
     @Override
-    public ClientResponseDTO update(ClientRequestDTO clientRequestDTO) {
+    @Transactional
+    public ClientResponseDTO updateClient(ClientRequestDTO clientRequestDTO) {
         Optional<Client> theClient = clientRepository.findClientByTaxNumber(clientRequestDTO.getTaxNumber());
 
         if (theClient.isEmpty()) {
@@ -99,6 +103,7 @@ public class ClientServiceImpl implements ClientService {
     }
 
     @Override
+    @Transactional
     public ClientResponseDTO findClientByUUID(String uuid) {
         Optional<Client> theClient = this.clientRepository.findClientByUUID(uuid);
 
