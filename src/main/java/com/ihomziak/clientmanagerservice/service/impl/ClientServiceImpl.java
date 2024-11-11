@@ -1,7 +1,6 @@
 package com.ihomziak.clientmanagerservice.service.impl;
 
 import com.ihomziak.clientmanagerservice.dao.ClientRepository;
-import com.ihomziak.clientmanagerservice.util.AccountType;
 import com.ihomziak.clientmanagerservice.dto.ClientRequestDTO;
 import com.ihomziak.clientmanagerservice.dto.ClientResponseDTO;
 import com.ihomziak.clientmanagerservice.dto.ClientsInfoDTO;
@@ -11,6 +10,7 @@ import com.ihomziak.clientmanagerservice.exception.ClientAlreadyExistException;
 import com.ihomziak.clientmanagerservice.exception.ClientNotFoundException;
 import com.ihomziak.clientmanagerservice.mapper.impl.MapStructMapperImpl;
 import com.ihomziak.clientmanagerservice.service.ClientService;
+import com.ihomziak.transactioncommon.AccountType;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;

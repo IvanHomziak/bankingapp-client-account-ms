@@ -1,6 +1,6 @@
 package com.ihomziak.clientmanagerservice.dto;
 
-import com.ihomziak.clientmanagerservice.util.TransactionStatus;
+import com.ihomziak.transactioncommon.TransactionStatus;
 import lombok.*;
 
 @Getter
@@ -8,12 +8,9 @@ import lombok.*;
 @NoArgsConstructor
 @AllArgsConstructor
 @ToString
+@Builder
 public class TransactionResponseDTO {
-
-    private Integer transactionEventId;
     private String transactionUuid;
     private TransactionStatus transactionStatus;
-    private String errorMessage;
-    private Double updatedSenderBalance;
-    private Double updatedReceiverBalance;
+    private String statusMessage;
 }

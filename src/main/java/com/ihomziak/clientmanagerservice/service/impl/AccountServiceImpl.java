@@ -6,7 +6,7 @@ import com.ihomziak.clientmanagerservice.dao.AccountRepository;
 import com.ihomziak.clientmanagerservice.dao.ClientRepository;
 import com.ihomziak.clientmanagerservice.dto.*;
 import com.ihomziak.clientmanagerservice.dto.TransactionRequestDTO;
-import com.ihomziak.clientmanagerservice.util.TransactionStatus;
+import com.ihomziak.transactioncommon.TransactionStatus;
 import com.ihomziak.clientmanagerservice.producer.TransactionEventProducer;
 import com.ihomziak.clientmanagerservice.service.AccountService;
 import com.ihomziak.clientmanagerservice.entity.Account;
@@ -20,8 +20,6 @@ import lombok.extern.slf4j.Slf4j;
 import org.apache.kafka.clients.consumer.ConsumerRecord;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
-import org.springframework.transaction.annotation.Isolation;
-import org.springframework.transaction.annotation.Propagation;
 import org.springframework.transaction.annotation.Transactional;
 
 import java.time.LocalDateTime;
@@ -158,14 +156,14 @@ public class AccountServiceImpl implements AccountService {
         Optional<Account> sender = accountRepository.findAccountByUUID(transactionRequestDTO.getSenderUuid());
 
         if (sender.isEmpty()) {
-            this.transactionEventProducer.sendTransactionResponse(transactionRequestDTO, "Sender account not found", TransactionStatus.FAILED, null, null);
+            this.transactionEventProducer.sendTransactionResponse(transactionRequestDTO, "Sender account not found", TransactionStatus.FAILED);
             return;
         }
 
         Optional<Account> receiver = accountRepository.findAccountByUUID(transactionRequestDTO.getReceiverUuid());
 
         if (receiver.isEmpty()) {
-            this.transactionEventProducer.sendTransactionResponse(transactionRequestDTO, "Receiver account not found", TransactionStatus.FAILED, null, null);
+            this.transactionEventProducer.sendTransactionResponse(transactionRequestDTO, "Receiver account not found", TransactionStatus.FAILED);
             return;
         }
 
@@ -173,16 +171,17 @@ public class AccountServiceImpl implements AccountService {
         Account receiverAccount = receiver.get();
 
         if (senderAccount.getBalance() < transactionRequestDTO.getAmount()) {
-            this.transactionEventProducer.sendTransactionResponse(transactionRequestDTO, "Insufficient funds", TransactionStatus.FAILED, null, null);
+            this.transactionEventProducer.sendTransactionResponse(transactionRequestDTO, "Insufficient funds", TransactionStatus.FAILED);
             return;
         }
 
         senderAccount.setBalance(senderAccount.getBalance() - transactionRequestDTO.getAmount());
         receiverAccount.setBalance(receiverAccount.getBalance() + transactionRequestDTO.getAmount());
 
+        // написати сторед процедуру для цього методу. почитати про сторед процедури та вьюшки. до бази потрібно звертатись не 4 рази а один
         accountRepository.save(senderAccount);
         accountRepository.save(receiverAccount);
 
-        this.transactionEventProducer.sendTransactionResponse(transactionRequestDTO, null, TransactionStatus.COMPLETED, senderAccount.getBalance(), receiverAccount.getBalance());
+        this.transactionEventProducer.sendTransactionResponse(transactionRequestDTO, null, TransactionStatus.COMPLETED);
     }
 }

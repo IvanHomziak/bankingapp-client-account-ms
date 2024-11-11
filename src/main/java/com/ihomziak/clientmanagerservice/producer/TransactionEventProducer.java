@@ -2,12 +2,9 @@ package com.ihomziak.clientmanagerservice.producer;
 
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
-import com.ihomziak.clientmanagerservice.dao.AccountRepository;
-import com.ihomziak.clientmanagerservice.dao.ClientRepository;
 import com.ihomziak.clientmanagerservice.dto.TransactionRequestDTO;
 import com.ihomziak.clientmanagerservice.dto.TransactionResponseDTO;
-import com.ihomziak.clientmanagerservice.util.TransactionStatus;
-import com.ihomziak.clientmanagerservice.mapper.MapStructMapper;
+import com.ihomziak.transactioncommon.TransactionStatus;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.kafka.core.KafkaTemplate;
@@ -20,9 +17,6 @@ import java.util.concurrent.CompletableFuture;
 @Slf4j
 public class TransactionEventProducer {
 
-    private final AccountRepository accountRepository;
-    private final ClientRepository clientRepository;
-    private final MapStructMapper mapper;
     private final ObjectMapper objectMapper;
     private final KafkaTemplate<Integer, String> kafkaTemplate;
 
@@ -30,33 +24,20 @@ public class TransactionEventProducer {
     @Value("${spring.kafka.topic.transaction-results-topic}")
     private String transactionResultsTopic;
 
-    public TransactionEventProducer(AccountRepository accountRepository, ClientRepository clientRepository, MapStructMapper mapper, ObjectMapper objectMapper, KafkaTemplate<Integer, String> kafkaTemplate) {
-        this.accountRepository = accountRepository;
-        this.clientRepository = clientRepository;
-        this.mapper = mapper;
+    public TransactionEventProducer(ObjectMapper objectMapper, KafkaTemplate<Integer, String> kafkaTemplate) {
         this.objectMapper = objectMapper;
         this.kafkaTemplate = kafkaTemplate;
     }
 
 
-    public CompletableFuture<SendResult<Integer, String>> sendTransactionResponse(
-            TransactionRequestDTO transactionRequestDTO,
-            String errorMessage,
-            TransactionStatus status,
-            Double updatedSenderBalance,
-            Double updatedReceiverBalance
-    ) throws JsonProcessingException {
-        TransactionResponseDTO responseDTO = new TransactionResponseDTO(
-                transactionRequestDTO.getTransactionEventId(),
-                transactionRequestDTO.getTransactionUuid(),
-                status,
-                errorMessage,
-                updatedSenderBalance,
-                updatedReceiverBalance
-        );
-        log.info("Sending transaction response: {}", responseDTO);
-
-        Integer key = transactionRequestDTO.getTransactionEventId();
+    public CompletableFuture<SendResult<Integer, String>> sendTransactionResponse(TransactionRequestDTO transactionRequestDTO, String statusMessage, TransactionStatus status) throws JsonProcessingException {
+        TransactionResponseDTO responseDTO = TransactionResponseDTO.builder()
+                .transactionUuid(transactionRequestDTO.getTransactionUuid())
+                .transactionStatus(status)
+                .statusMessage(statusMessage)
+                .build();
+        log.info("Sending transaction response message: {}", responseDTO);
+        Integer key = 1;
         String value = objectMapper.writeValueAsString(responseDTO);
 
         log.info("Sending transaction response: {}", value);
