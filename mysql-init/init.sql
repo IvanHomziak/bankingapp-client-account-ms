@@ -49,5 +49,46 @@ INSERT INTO clients_db.account (account_number, account_type, balance, client_id
 VALUES ('PL12345678901234567811123456', 'CHECKING', 1000.50, 1, 'a2c3d234-e567-890f-gh12-3456789ijkl'),
        ('PL98765432109876543220987654', 'SAVINGS', 2500.75, 2, 'c3d434e5-f678-901g-hi23-4567890mnop');
 
--- Select all records from the client table
-SELECT * FROM client;
+DELIMITER //
+
+CREATE PROCEDURE TransferMoney(
+    IN senderAccountUUID VARCHAR(255),
+    IN recipientAccountUUID VARCHAR(255),
+    IN transferAmount FLOAT,
+    OUT transactionStatus VARCHAR(40)
+)
+BEGIN
+    DECLARE senderBalance FLOAT;
+    DECLARE recipientBalance FLOAT;
+
+    -- Check if sender account exists and fetch the current balance
+    SELECT balance INTO senderBalance
+    FROM account
+    WHERE uuid = senderAccountUUID;
+
+    -- Check if recipient account exists
+    SELECT balance INTO recipientBalance
+    FROM account
+    WHERE uuid = recipientAccountUUID;
+
+    -- If sender has insufficient funds, fail the transaction
+    IF senderBalance < transferAmount THEN
+        SET transactionStatus = 'FAILED';
+    ELSE
+        -- Deduct amount from sender's account
+        UPDATE account
+        SET balance = balance - transferAmount
+        WHERE uuid = senderAccountUUID;
+
+        -- Add amount to recipient's account
+        UPDATE account
+        SET balance = balance + transferAmount
+        WHERE uuid = recipientAccountUUID;
+
+        -- Log transaction as SUCCESS
+        SET transactionStatus = 'COMPLETED';
+    END IF;
+END //
+
+DELIMITER ;
+

@@ -8,7 +8,7 @@ import lombok.*;
 @NoArgsConstructor
 @AllArgsConstructor
 @ToString
-public class TransactionRequestDTO {
+public class TransactionEventRequestDTO {
     private String transactionUuid;
     private String senderUuid;
     private String receiverUuid;

@@ -5,7 +5,7 @@ import com.fasterxml.jackson.databind.ObjectMapper;
 import com.ihomziak.clientmanagerservice.dao.AccountRepository;
 import com.ihomziak.clientmanagerservice.dao.ClientRepository;
 import com.ihomziak.clientmanagerservice.dto.*;
-import com.ihomziak.clientmanagerservice.dto.TransactionRequestDTO;
+import com.ihomziak.clientmanagerservice.dto.TransactionEventRequestDTO;
 import com.ihomziak.transactioncommon.TransactionStatus;
 import com.ihomziak.clientmanagerservice.producer.TransactionEventProducer;
 import com.ihomziak.clientmanagerservice.service.AccountService;
@@ -151,37 +151,56 @@ public class AccountServiceImpl implements AccountService {
     @Transactional
     public void processTransactionEvent(ConsumerRecord<Integer, String> consumerRecord) throws JsonProcessingException {
 
-        TransactionRequestDTO transactionRequestDTO = objectMapper.readValue(consumerRecord.value(), TransactionRequestDTO.class);
+        TransactionEventRequestDTO transactionEventRequestDTO = objectMapper.readValue(consumerRecord.value(), TransactionEventRequestDTO.class);
 
-        Optional<Account> sender = accountRepository.findAccountByUUID(transactionRequestDTO.getSenderUuid());
+        Optional<Account> sender = accountRepository.findAccountByUUID(transactionEventRequestDTO.getSenderUuid());
 
         if (sender.isEmpty()) {
-            this.transactionEventProducer.sendTransactionResponse(transactionRequestDTO, "Sender account not found", TransactionStatus.FAILED);
+            this.transactionEventProducer.sendTransactionResponse(transactionEventRequestDTO, "Sender account not found", TransactionStatus.FAILED);
             return;
         }
 
-        Optional<Account> receiver = accountRepository.findAccountByUUID(transactionRequestDTO.getReceiverUuid());
+        Optional<Account> receiver = accountRepository.findAccountByUUID(transactionEventRequestDTO.getReceiverUuid());
 
         if (receiver.isEmpty()) {
-            this.transactionEventProducer.sendTransactionResponse(transactionRequestDTO, "Receiver account not found", TransactionStatus.FAILED);
+            this.transactionEventProducer.sendTransactionResponse(transactionEventRequestDTO, "Receiver account not found", TransactionStatus.FAILED);
             return;
         }
 
         Account senderAccount = sender.get();
         Account receiverAccount = receiver.get();
 
-        if (senderAccount.getBalance() < transactionRequestDTO.getAmount()) {
-            this.transactionEventProducer.sendTransactionResponse(transactionRequestDTO, "Insufficient funds", TransactionStatus.FAILED);
+        if (senderAccount.getBalance() < transactionEventRequestDTO.getAmount()) {
+            this.transactionEventProducer.sendTransactionResponse(transactionEventRequestDTO, "Insufficient funds", TransactionStatus.FAILED);
             return;
         }
 
-        senderAccount.setBalance(senderAccount.getBalance() - transactionRequestDTO.getAmount());
-        receiverAccount.setBalance(receiverAccount.getBalance() + transactionRequestDTO.getAmount());
+        senderAccount.setBalance(senderAccount.getBalance() - transactionEventRequestDTO.getAmount());
+        receiverAccount.setBalance(receiverAccount.getBalance() + transactionEventRequestDTO.getAmount());
 
         // написати сторед процедуру для цього методу. почитати про сторед процедури та вьюшки. до бази потрібно звертатись не 4 рази а один
         accountRepository.save(senderAccount);
         accountRepository.save(receiverAccount);
 
-        this.transactionEventProducer.sendTransactionResponse(transactionRequestDTO, null, TransactionStatus.COMPLETED);
+        this.transactionEventProducer.sendTransactionResponse(transactionEventRequestDTO, null, TransactionStatus.COMPLETED);
+    }
+
+    @Transactional
+    public void processTransactionEvent2(ConsumerRecord<Integer, String> consumerRecord) throws JsonProcessingException {
+        TransactionEventRequestDTO transactionEventRequestDTO = objectMapper.readValue(consumerRecord.value(), TransactionEventRequestDTO.class);
+
+        String result = this.accountRepository.transferMoney(
+                transactionEventRequestDTO.getSenderUuid(),
+                transactionEventRequestDTO.getReceiverUuid(),
+                transactionEventRequestDTO.getAmount()
+        );
+
+        if (TransactionStatus.FAILED.toString().equals(result)) {
+            this.transactionEventProducer.sendTransactionResponse(transactionEventRequestDTO, "message", TransactionStatus.FAILED);
+
+        } else if (TransactionStatus.COMPLETED.toString().equals(result)) {
+            this.transactionEventProducer.sendTransactionResponse(transactionEventRequestDTO, "message", TransactionStatus.COMPLETED);
+        }
+
     }
 }

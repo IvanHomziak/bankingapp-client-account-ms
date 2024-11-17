@@ -3,6 +3,8 @@ package com.ihomziak.clientmanagerservice.dao;
 import com.ihomziak.clientmanagerservice.entity.Account;
 import com.ihomziak.transactioncommon.AccountType;
 import org.springframework.data.jpa.repository.JpaRepository;
+import org.springframework.data.jpa.repository.query.Procedure;
+import org.springframework.data.repository.query.Param;
 import org.springframework.stereotype.Repository;
 
 import java.util.List;
@@ -20,4 +22,11 @@ public interface AccountRepository extends JpaRepository<Account, Long> {
     List<Account> findAccountsByAccountTypeAndClientUUID(AccountType accountType, String clientUUD);
 
     List<Account> findAccountsByClientUUID(String clientUUID);
+
+    @Procedure(procedureName = "TransferMoney")
+    String transferMoney(
+            @Param("senderId") String senderUuid,
+            @Param("recipientId") String receiverUuid,
+            @Param("amount") double amount
+    );
 }

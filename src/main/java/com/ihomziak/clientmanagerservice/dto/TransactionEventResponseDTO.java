@@ -9,7 +9,7 @@ import lombok.*;
 @AllArgsConstructor
 @ToString
 @Builder
-public class TransactionResponseDTO {
+public class TransactionEventResponseDTO {
     private String transactionUuid;
     private TransactionStatus transactionStatus;
     private String statusMessage;

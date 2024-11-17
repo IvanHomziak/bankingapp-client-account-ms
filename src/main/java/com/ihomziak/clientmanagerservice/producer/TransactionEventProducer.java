@@ -2,8 +2,8 @@ package com.ihomziak.clientmanagerservice.producer;
 
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
-import com.ihomziak.clientmanagerservice.dto.TransactionRequestDTO;
-import com.ihomziak.clientmanagerservice.dto.TransactionResponseDTO;
+import com.ihomziak.clientmanagerservice.dto.TransactionEventRequestDTO;
+import com.ihomziak.clientmanagerservice.dto.TransactionEventResponseDTO;
 import com.ihomziak.transactioncommon.TransactionStatus;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Value;
@@ -30,9 +30,9 @@ public class TransactionEventProducer {
     }
 
 
-    public CompletableFuture<SendResult<Integer, String>> sendTransactionResponse(TransactionRequestDTO transactionRequestDTO, String statusMessage, TransactionStatus status) throws JsonProcessingException {
-        TransactionResponseDTO responseDTO = TransactionResponseDTO.builder()
-                .transactionUuid(transactionRequestDTO.getTransactionUuid())
+    public CompletableFuture<SendResult<Integer, String>> sendTransactionResponse(TransactionEventRequestDTO transactionEventRequestDTO, String statusMessage, TransactionStatus status) throws JsonProcessingException {
+        TransactionEventResponseDTO responseDTO = TransactionEventResponseDTO.builder()
+                .transactionUuid(transactionEventRequestDTO.getTransactionUuid())
                 .transactionStatus(status)
                 .statusMessage(statusMessage)
                 .build();
