@@ -20,7 +20,7 @@ public class TransactionEventConsumer {
     }
 
     @KafkaListener(topics = {"${spring.kafka.topic.transfer-transactions-topic}"})
-    public void onMessage(ConsumerRecord<Integer, String> consumerRecord) throws JsonProcessingException {
+    public void onMessage(ConsumerRecord<String, AvroTransactionEventRequestDTO> consumerRecord) throws JsonProcessingException {
         log.info("Received ConsumerRecord: {}", consumerRecord.value());
         accountService.processTransactionEvent2(consumerRecord);
     }

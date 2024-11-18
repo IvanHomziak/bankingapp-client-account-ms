@@ -148,58 +148,60 @@ public class AccountServiceImpl implements AccountService {
         return mapper.accountToAccountInfoDto(account.get());
     }
 
+//    @Transactional
+//    public void processTransactionEvent(ConsumerRecord<Integer, String> consumerRecord) throws JsonProcessingException {
+//
+//        TransactionEventRequestDTO transactionEventRequestDTO = objectMapper.readValue(consumerRecord.value(), TransactionEventRequestDTO.class);
+//
+//        Optional<Account> sender = accountRepository.findAccountByUUID(transactionEventRequestDTO.getSenderUuid());
+//
+//        if (sender.isEmpty()) {
+//            this.transactionEventProducer.sendTransactionResponse(transactionEventRequestDTO, "Sender account not found", TransactionStatus.FAILED);
+//            return;
+//        }
+//
+//        Optional<Account> receiver = accountRepository.findAccountByUUID(transactionEventRequestDTO.getReceiverUuid());
+//
+//        if (receiver.isEmpty()) {
+//            this.transactionEventProducer.sendTransactionResponse(transactionEventRequestDTO, "Receiver account not found", TransactionStatus.FAILED);
+//            return;
+//        }
+//
+//        Account senderAccount = sender.get();
+//        Account receiverAccount = receiver.get();
+//
+//        if (senderAccount.getBalance() < transactionEventRequestDTO.getAmount()) {
+//            this.transactionEventProducer.sendTransactionResponse(transactionEventRequestDTO, "Insufficient funds", TransactionStatus.FAILED);
+//            return;
+//        }
+//
+//        senderAccount.setBalance(senderAccount.getBalance() - transactionEventRequestDTO.getAmount());
+//        receiverAccount.setBalance(receiverAccount.getBalance() + transactionEventRequestDTO.getAmount());
+//
+//        // написати сторед процедуру для цього методу. почитати про сторед процедури та вьюшки. до бази потрібно звертатись не 4 рази а один
+//        accountRepository.save(senderAccount);
+//        accountRepository.save(receiverAccount);
+//
+//        this.transactionEventProducer.sendTransactionResponse(transactionEventRequestDTO, null, TransactionStatus.COMPLETED);
+//    }
+
     @Transactional
-    public void processTransactionEvent(ConsumerRecord<Integer, String> consumerRecord) throws JsonProcessingException {
+    public void processTransactionEvent2(ConsumerRecord<String, AvroTransactionEventRequestDTO> consumerRecord) throws JsonProcessingException {
+//        AvroTransactionEventRequestDTO transactionEventRequestDTO = objectMapper.readValue(consumerRecord.value(), TransactionEventRequestDTO.class);
 
-        TransactionEventRequestDTO transactionEventRequestDTO = objectMapper.readValue(consumerRecord.value(), TransactionEventRequestDTO.class);
-
-        Optional<Account> sender = accountRepository.findAccountByUUID(transactionEventRequestDTO.getSenderUuid());
-
-        if (sender.isEmpty()) {
-            this.transactionEventProducer.sendTransactionResponse(transactionEventRequestDTO, "Sender account not found", TransactionStatus.FAILED);
-            return;
-        }
-
-        Optional<Account> receiver = accountRepository.findAccountByUUID(transactionEventRequestDTO.getReceiverUuid());
-
-        if (receiver.isEmpty()) {
-            this.transactionEventProducer.sendTransactionResponse(transactionEventRequestDTO, "Receiver account not found", TransactionStatus.FAILED);
-            return;
-        }
-
-        Account senderAccount = sender.get();
-        Account receiverAccount = receiver.get();
-
-        if (senderAccount.getBalance() < transactionEventRequestDTO.getAmount()) {
-            this.transactionEventProducer.sendTransactionResponse(transactionEventRequestDTO, "Insufficient funds", TransactionStatus.FAILED);
-            return;
-        }
-
-        senderAccount.setBalance(senderAccount.getBalance() - transactionEventRequestDTO.getAmount());
-        receiverAccount.setBalance(receiverAccount.getBalance() + transactionEventRequestDTO.getAmount());
-
-        // написати сторед процедуру для цього методу. почитати про сторед процедури та вьюшки. до бази потрібно звертатись не 4 рази а один
-        accountRepository.save(senderAccount);
-        accountRepository.save(receiverAccount);
-
-        this.transactionEventProducer.sendTransactionResponse(transactionEventRequestDTO, null, TransactionStatus.COMPLETED);
-    }
-
-    @Transactional
-    public void processTransactionEvent2(ConsumerRecord<Integer, String> consumerRecord) throws JsonProcessingException {
-        TransactionEventRequestDTO transactionEventRequestDTO = objectMapper.readValue(consumerRecord.value(), TransactionEventRequestDTO.class);
-
+        String key = consumerRecord.key();
+        AvroTransactionEventRequestDTO requestDTO = consumerRecord.value();
         String result = this.accountRepository.transferMoney(
-                transactionEventRequestDTO.getSenderUuid(),
-                transactionEventRequestDTO.getReceiverUuid(),
-                transactionEventRequestDTO.getAmount()
+                requestDTO.getSenderUuid().toString(),
+                requestDTO.getReceiverUuid().toString(),
+                requestDTO.getAmount()
         );
 
         if (TransactionStatus.FAILED.toString().equals(result)) {
-            this.transactionEventProducer.sendTransactionResponse(transactionEventRequestDTO, "message", TransactionStatus.FAILED);
+            this.transactionEventProducer.sendTransactionResponse(requestDTO, "message", "FAILED");
 
         } else if (TransactionStatus.COMPLETED.toString().equals(result)) {
-            this.transactionEventProducer.sendTransactionResponse(transactionEventRequestDTO, "message", TransactionStatus.COMPLETED);
+            this.transactionEventProducer.sendTransactionResponse(requestDTO, "message", "COMPLETED");
         }
 
     }
