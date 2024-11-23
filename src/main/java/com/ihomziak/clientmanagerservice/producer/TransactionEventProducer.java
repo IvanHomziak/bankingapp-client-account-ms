@@ -4,7 +4,7 @@ import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.ihomziak.clientmanagerservice.dto.TransactionEventRequestDTO;
 import com.ihomziak.clientmanagerservice.dto.TransactionEventResponseDTO;
-import com.ihomziak.transactioncommon.TransactionStatus;
+import com.ihomziak.transactioncommon.utils.TransactionStatus;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.kafka.core.KafkaTemplate;

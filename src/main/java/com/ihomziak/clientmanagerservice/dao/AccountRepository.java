@@ -1,7 +1,7 @@
 package com.ihomziak.clientmanagerservice.dao;
 
 import com.ihomziak.clientmanagerservice.entity.Account;
-import com.ihomziak.transactioncommon.AccountType;
+import com.ihomziak.transactioncommon.utils.AccountType;
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.data.jpa.repository.query.Procedure;
 import org.springframework.data.repository.query.Param;

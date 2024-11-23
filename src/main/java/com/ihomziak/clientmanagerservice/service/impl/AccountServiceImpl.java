@@ -6,7 +6,7 @@ import com.ihomziak.clientmanagerservice.dao.AccountRepository;
 import com.ihomziak.clientmanagerservice.dao.ClientRepository;
 import com.ihomziak.clientmanagerservice.dto.*;
 import com.ihomziak.clientmanagerservice.dto.TransactionEventRequestDTO;
-import com.ihomziak.transactioncommon.TransactionStatus;
+import com.ihomziak.transactioncommon.utils.TransactionStatus;
 import com.ihomziak.clientmanagerservice.producer.TransactionEventProducer;
 import com.ihomziak.clientmanagerservice.service.AccountService;
 import com.ihomziak.clientmanagerservice.entity.Account;

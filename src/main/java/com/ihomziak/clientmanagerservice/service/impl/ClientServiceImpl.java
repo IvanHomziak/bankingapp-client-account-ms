@@ -10,7 +10,7 @@ import com.ihomziak.clientmanagerservice.exception.ClientAlreadyExistException;
 import com.ihomziak.clientmanagerservice.exception.ClientNotFoundException;
 import com.ihomziak.clientmanagerservice.mapper.impl.MapStructMapperImpl;
 import com.ihomziak.clientmanagerservice.service.ClientService;
-import com.ihomziak.transactioncommon.AccountType;
+import com.ihomziak.transactioncommon.utils.AccountType;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;

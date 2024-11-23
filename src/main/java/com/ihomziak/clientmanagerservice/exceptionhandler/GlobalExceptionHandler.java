@@ -1,7 +1,7 @@
 package com.ihomziak.clientmanagerservice.exceptionhandler;
 
-import com.ihomziak.clientmanagerservice.dto.ErrorDTO;
 import com.ihomziak.clientmanagerservice.exception.*;
+import com.ihomziak.transactioncommon.dto.ErrorDTO;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.http.HttpHeaders;
