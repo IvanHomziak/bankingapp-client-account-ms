@@ -10,7 +10,6 @@ import com.ihomziak.clientmanagerservice.entity.Client;
 import com.ihomziak.clientmanagerservice.exception.*;
 import com.ihomziak.clientmanagerservice.mapper.MapStructMapper;
 import com.ihomziak.clientmanagerservice.producer.TransactionEventProducer;
-import com.ihomziak.clientmanagerservice.util.AccountNumberGenerator;
 import com.ihomziak.transactioncommon.utils.AccountType;
 import com.ihomziak.transactioncommon.utils.TransactionStatus;
 import org.apache.kafka.clients.consumer.ConsumerRecord;
