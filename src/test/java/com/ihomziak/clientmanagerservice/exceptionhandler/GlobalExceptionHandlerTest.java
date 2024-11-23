@@ -42,7 +42,7 @@ class GlobalExceptionHandlerTest {
         AccountNotFoundException ex = new AccountNotFoundException("Account not found");
         ResponseEntity<ErrorDTO> response = globalExceptionHandler.handleException(ex, webRequest);
 
-        assertEquals(HttpStatus.BAD_REQUEST, response.getStatusCode());
+        assertEquals(HttpStatus.NOT_FOUND, response.getStatusCode());
         assertEquals("Account not found", response.getBody().getError());
     }
 
