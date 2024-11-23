@@ -132,7 +132,7 @@
                     </execution>
                 </executions>
                 <configuration>
-                    <connectionUrl>scm:git:https://github.com/IvanHomziak/transaction-common.git</connectionUrl>
+                    <connectionUrl>scm:git:https://github.com/IvanHomziak/client-transaction-common.git</connectionUrl>
                     <checkoutDirectory>./transaction-common</checkoutDirectory>
                 </configuration>
             </plugin>
