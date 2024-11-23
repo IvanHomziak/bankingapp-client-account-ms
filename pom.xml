@@ -8,14 +8,18 @@
         <version>3.3.0</version>
         <relativePath/> <!-- lookup parent from repository -->
     </parent>
+
     <groupId>com.ihomziak</groupId>
     <artifactId>client-manager-service</artifactId>
     <version>0.0.1-SNAPSHOT</version>
+
     <name>client-manager-service</name>
     <description>Demo project for Spring Boot</description>
+
     <properties>
         <java.version>17</java.version>
     </properties>
+
     <dependencies>
         <dependency>
             <groupId>org.springframework.boot</groupId>
@@ -49,6 +53,10 @@
             <artifactId>spring-boot-devtools</artifactId>
             <scope>runtime</scope>
             <optional>true</optional>
+        </dependency>
+        <dependency>
+            <groupId>org.springframework.boot</groupId>
+            <artifactId>spring-boot-starter-actuator</artifactId>
         </dependency>
         <dependency>
             <groupId>org.hibernate.validator</groupId>
@@ -91,6 +99,7 @@
     </dependencies>
 
     <build>
+        <finalName>client-manager-service</finalName>
         <plugins>
             <plugin>
                 <groupId>org.springframework.boot</groupId>
@@ -111,7 +120,22 @@
                     <skipTests>true</skipTests>
                 </configuration>
             </plugin>
+            <plugin>
+                <groupId>org.apache.maven.plugins</groupId>
+                <artifactId>maven-scm-plugin</artifactId>
+                <version>1.11.3</version>
+                <executions>
+                    <execution>
+                        <goals>
+                            <goal>checkout</goal>
+                        </goals>
+                    </execution>
+                </executions>
+                <configuration>
+                    <connectionUrl>scm:git:https://github.com/IvanHomziak/transaction-common.git</connectionUrl>
+                    <checkoutDirectory>./transaction-common</checkoutDirectory>
+                </configuration>
+            </plugin>
         </plugins>
-        <finalName>client-manager-service</finalName>
     </build>
 </project>
