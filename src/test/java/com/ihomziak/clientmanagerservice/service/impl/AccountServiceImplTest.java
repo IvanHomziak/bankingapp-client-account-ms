@@ -1,30 +1,33 @@
 package com.ihomziak.clientmanagerservice.service.impl;
 
+import com.fasterxml.jackson.core.JsonProcessingException;
+import com.fasterxml.jackson.databind.ObjectMapper;
 import com.ihomziak.clientmanagerservice.dao.AccountRepository;
 import com.ihomziak.clientmanagerservice.dao.ClientRepository;
 import com.ihomziak.clientmanagerservice.dto.*;
 import com.ihomziak.clientmanagerservice.entity.Account;
 import com.ihomziak.clientmanagerservice.entity.Client;
-import com.ihomziak.clientmanagerservice.exception.AccountNumberQuantityException;
+import com.ihomziak.clientmanagerservice.exception.*;
 import com.ihomziak.clientmanagerservice.mapper.MapStructMapper;
+import com.ihomziak.clientmanagerservice.producer.TransactionEventProducer;
+import com.ihomziak.clientmanagerservice.util.AccountNumberGenerator;
 import com.ihomziak.transactioncommon.utils.AccountType;
+import com.ihomziak.transactioncommon.utils.TransactionStatus;
+import org.apache.kafka.clients.consumer.ConsumerRecord;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.InjectMocks;
 import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
-import com.ihomziak.clientmanagerservice.exception.ClientNotFoundException;
 
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Optional;
 
 import static org.junit.jupiter.api.Assertions.*;
+import static org.mockito.ArgumentMatchers.*;
 import static org.mockito.Mockito.*;
-
-import static org.mockito.ArgumentMatchers.anyString;
-import static org.mockito.Mockito.when;
 
 @ExtendWith(MockitoExtension.class)
 class AccountServiceImplTest {
@@ -38,6 +41,12 @@ class AccountServiceImplTest {
     @Mock
     private MapStructMapper mapper;
 
+    @Mock
+    private ObjectMapper objectMapper;
+
+    @Mock
+    private TransactionEventProducer transactionEventProducer;
+
     @InjectMocks
     private AccountServiceImpl accountService;
 
@@ -45,94 +54,182 @@ class AccountServiceImplTest {
     private AccountResponseDTO accountResponseDTO;
     private Client client;
     private Account account;
-    private List<Account> accountList;
-    private String clientUuid;
-    private String accountNumber;
 
     @BeforeEach
-    public void setup() {
-        clientUuid = "206625ce-3ee7-4174-8f92-4bdc41c18274";
-        accountNumber = "165445000023211234";
-
-        // Mock AccountRequestDTO
+    void setup() {
         accountRequestDTO = new AccountRequestDTO();
-        accountRequestDTO.setAccountNumber(accountNumber);
+        accountRequestDTO.setClientUUID("client-uuid");
+        accountRequestDTO.setAccountNumber("123456789");
         accountRequestDTO.setAccountType(AccountType.CHECKING);
-        accountRequestDTO.setBalance(1000);
-        accountRequestDTO.setClientUUID(clientUuid);
+        accountRequestDTO.setBalance(1000.0);
 
-        // Mock AccountResponseDTO
         accountResponseDTO = new AccountResponseDTO();
-        accountResponseDTO.setAccountId(1);
-        accountResponseDTO.setAccountNumber(accountRequestDTO.getAccountNumber());
-        accountResponseDTO.setAccountType(accountRequestDTO.getAccountType());
-        accountResponseDTO.setBalance(accountRequestDTO.getBalance());
-        accountResponseDTO.setUUID(clientUuid);
+        accountResponseDTO.setUUID("client-uuid");
+        accountResponseDTO.setAccountType(AccountType.CHECKING);
 
-        // Mock Client
         client = new Client();
-        client.setUUID(clientUuid);
+        client.setUUID("client-uuid");
 
-        // Mock Account
         account = new Account();
-        account.setUUID(clientUuid);
-        account.setAccountNumber(accountNumber);
+        account.setUUID("client-uuid");
+        account.setAccountNumber("123456789");
         account.setAccountType(AccountType.CHECKING);
-
-        accountList = new ArrayList<>();
     }
 
     @Test
-    public void testCreateCheckingAccount() {
-        // Mock dependencies
-        accountList.add(account);
-        when(clientRepository.findClientByUUID(clientUuid)).thenReturn(Optional.of(client));
-        when(accountRepository.findAccountsByAccountTypeAndClientUUID(AccountType.CHECKING, clientUuid)).thenReturn(accountList);
-        when(mapper.accountRequestDtoToAccount(accountRequestDTO)).thenReturn(account);
-        when(mapper.accountToAccountResponseDto(account)).thenReturn(accountResponseDTO);
+    void createCheckingAccount_Success() {
+        List<Account> accounts = new ArrayList<>();
 
-        // Call method under test
+        when(clientRepository.findClientByUUID(anyString())).thenReturn(Optional.of(client));
+        when(accountRepository.findAccountsByAccountTypeAndClientUUID(any(), anyString())).thenReturn(accounts);
+        when(mapper.accountRequestDtoToAccount(any())).thenReturn(account);
+        when(mapper.accountToAccountResponseDto(any())).thenReturn(accountResponseDTO);
+
         AccountResponseDTO response = accountService.createCheckingAccount(accountRequestDTO);
 
-        // Assertions
         assertNotNull(response);
-        assertEquals(accountResponseDTO, response);
-
-        // Verify interactions
-        verify(clientRepository, times(1)).findClientByUUID(clientUuid);
-        verify(accountRepository, times(1)).findAccountsByAccountTypeAndClientUUID(AccountType.CHECKING, clientUuid);
-        verify(mapper, times(1)).accountRequestDtoToAccount(accountRequestDTO);
-        verify(mapper, times(1)).accountToAccountResponseDto(account);
+        verify(accountRepository, times(1)).save(any(Account.class));
     }
 
     @Test
-    public void testCreateCheckingAccount_ClientNotFound() {
-        // Mock client not found
-        when(clientRepository.findClientByUUID(clientUuid)).thenReturn(Optional.empty());
+    void createCheckingAccount_ClientNotFound() {
+        when(clientRepository.findClientByUUID(anyString())).thenReturn(Optional.empty());
 
-        // Call method and assert exception
         assertThrows(ClientNotFoundException.class, () -> accountService.createCheckingAccount(accountRequestDTO));
-
-        // Verify interactions
-        verify(clientRepository, times(1)).findClientByUUID(clientUuid);
-        verify(accountRepository, never()).findAccountsByAccountTypeAndClientUUID(any(), any());
+        verify(accountRepository, never()).save(any());
     }
 
     @Test
-    public void testCreateCheckingAccount_LimitOfBankAccountsExceeded_SameAccountType() {
-        // Mock max accounts of the same type
-        accountList.add(account);
-        accountList.add(account);
-        accountList.add(account); // Exceeds limit
-        when(clientRepository.findClientByUUID(clientUuid)).thenReturn(Optional.of(client));
-        when(accountRepository.findAccountsByAccountTypeAndClientUUID(AccountType.CHECKING, clientUuid)).thenReturn(accountList);
+    void createCheckingAccount_MaxAccountLimitReached() {
+        List<Account> accounts = new ArrayList<>();
+        accounts.add(account);
+        accounts.add(account);
 
-        // Call method and assert exception
+        when(clientRepository.findClientByUUID(anyString())).thenReturn(Optional.of(client));
+        when(accountRepository.findAccountsByAccountTypeAndClientUUID(any(), anyString())).thenReturn(accounts);
+
         assertThrows(AccountNumberQuantityException.class, () -> accountService.createCheckingAccount(accountRequestDTO));
+        verify(accountRepository, never()).save(any());
+    }
 
-        // Verify interactions
-        verify(clientRepository, times(1)).findClientByUUID(clientUuid);
-        verify(accountRepository, times(1)).findAccountsByAccountTypeAndClientUUID(AccountType.CHECKING, clientUuid);
+    @Test
+    void deleteAccount_Success() {
+        when(accountRepository.findAccountByUUID(anyString())).thenReturn(Optional.of(account));
+        when(mapper.accountToAccountInfoDto(any())).thenReturn(new AccountInfoDTO());
+
+        AccountInfoDTO response = accountService.deleteAccount("account-uuid");
+
+        assertNotNull(response);
+        verify(accountRepository, times(1)).delete(any(Account.class));
+    }
+
+    @Test
+    void deleteAccount_AccountNotFound() {
+        when(accountRepository.findAccountByUUID(anyString())).thenReturn(Optional.empty());
+
+        assertThrows(AccountNotFoundException.class, () -> accountService.deleteAccount("account-uuid"));
+        verify(accountRepository, never()).delete(any());
+    }
+
+    @Test
+    void updateAccount_Success() {
+        when(accountRepository.findAccountByUUID(anyString())).thenReturn(Optional.of(account));
+        when(clientRepository.findClientByUUID(anyString())).thenReturn(Optional.of(client));
+        when(mapper.accountToAccountResponseDto(any())).thenReturn(accountResponseDTO);
+
+        AccountResponseDTO response = accountService.updateAccount(accountRequestDTO);
+
+        assertNotNull(response);
+        verify(accountRepository, times(1)).save(any(Account.class));
+    }
+
+    @Test
+    void updateAccount_AccountNotFound() {
+        when(accountRepository.findAccountByUUID(anyString())).thenReturn(Optional.empty());
+
+        assertThrows(AccountNotFoundException.class, () -> accountService.updateAccount(accountRequestDTO));
+        verify(accountRepository, never()).save(any());
+    }
+
+    @Test
+    void processTransactionEvent_Success() throws JsonProcessingException {
+        // Mock the consumer record
+        ConsumerRecord<Integer, String> consumerRecord = mock(ConsumerRecord.class);
+        when(consumerRecord.value()).thenReturn("{\"senderUuid\":\"sender-uuid\",\"receiverUuid\":\"receiver-uuid\",\"amount\":500.0}");
+
+        // Mock the deserialized DTO
+        TransactionEventRequestDTO transactionEventRequestDTO = new TransactionEventRequestDTO();
+        transactionEventRequestDTO.setSenderUuid("sender-uuid");
+        transactionEventRequestDTO.setReceiverUuid("receiver-uuid");
+        transactionEventRequestDTO.setAmount(500.0);
+        when(objectMapper.readValue(anyString(), eq(TransactionEventRequestDTO.class))).thenReturn(transactionEventRequestDTO);
+
+        // Mock the accounts
+        Account senderAccount = new Account();
+        senderAccount.setUUID("sender-uuid");
+        senderAccount.setBalance(1000.0);
+
+        Account receiverAccount = new Account();
+        receiverAccount.setUUID("receiver-uuid");
+        receiverAccount.setBalance(200.0);
+
+        when(accountRepository.findAccountByUUID("sender-uuid")).thenReturn(Optional.of(senderAccount));
+        when(accountRepository.findAccountByUUID("receiver-uuid")).thenReturn(Optional.of(receiverAccount));
+
+        // Execute the method under test
+        accountService.processTransactionEvent(consumerRecord);
+
+        // Verify behavior
+        verify(accountRepository, times(2)).save(any(Account.class)); // Once for sender, once for receiver
+        verify(transactionEventProducer, times(1)).sendTransactionResponse(
+                eq(transactionEventRequestDTO),
+                eq(null),
+                eq(TransactionStatus.COMPLETED)
+        );
+
+        // Assert updated balances
+        assertEquals(500.0, senderAccount.getBalance());
+        assertEquals(700.0, receiverAccount.getBalance());
+    }
+
+
+    @Test
+    void processTransactionEvent_InsufficientFunds() throws JsonProcessingException {
+        // Mock the ConsumerRecord
+        ConsumerRecord<Integer, String> consumerRecord = mock(ConsumerRecord.class);
+        when(consumerRecord.value()).thenReturn("{\"senderUuid\":\"sender-uuid\",\"receiverUuid\":\"receiver-uuid\",\"amount\":2000.0}");
+
+        // Mock the deserialized DTO
+        TransactionEventRequestDTO dto = new TransactionEventRequestDTO();
+        dto.setSenderUuid("sender-uuid");
+        dto.setReceiverUuid("receiver-uuid");
+        dto.setAmount(2000.0);
+
+        when(objectMapper.readValue(anyString(), eq(TransactionEventRequestDTO.class))).thenReturn(dto);
+
+        // Mock sender account with insufficient funds
+        Account senderAccount = new Account();
+        senderAccount.setUUID("sender-uuid");
+        senderAccount.setBalance(1000.0);
+
+        Account receiverAccount = new Account();
+        receiverAccount.setUUID("receiver-uuid");
+        receiverAccount.setBalance(200.0);
+
+        when(accountRepository.findAccountByUUID("sender-uuid")).thenReturn(Optional.of(senderAccount));
+        when(accountRepository.findAccountByUUID("receiver-uuid")).thenReturn(Optional.of(receiverAccount));
+
+        // Execute the method under test
+        accountService.processTransactionEvent(consumerRecord);
+
+        // Verify the transaction response was sent with FAILED status
+        verify(transactionEventProducer, times(1)).sendTransactionResponse(
+                eq(dto),
+                eq("Insufficient funds"),
+                eq(TransactionStatus.FAILED)
+        );
+
+        // Verify no accounts were saved
         verify(accountRepository, never()).save(any(Account.class));
     }
 }
