@@ -43,12 +43,8 @@ class AccountServiceImplTest {
 
     private AccountRequestDTO accountRequestDTO;
     private AccountResponseDTO accountResponseDTO;
-    private ClientRequestDTO clientRequestDTO;
-    private ClientResponseDTO clientResponseDTO;
-    private AccountInfoDTO accountInfoDTO;
     private Client client;
     private Account account;
-
     private List<Account> accountList;
     private String clientUuid;
     private String accountNumber;
@@ -58,95 +54,85 @@ class AccountServiceImplTest {
         clientUuid = "206625ce-3ee7-4174-8f92-4bdc41c18274";
         accountNumber = "165445000023211234";
 
+        // Mock AccountRequestDTO
         accountRequestDTO = new AccountRequestDTO();
         accountRequestDTO.setAccountNumber(accountNumber);
         accountRequestDTO.setAccountType(AccountType.CHECKING);
         accountRequestDTO.setBalance(1000);
         accountRequestDTO.setClientUUID(clientUuid);
 
-        AccountHolderDTO accountHolder = new AccountHolderDTO();
-        accountHolder.setFirstName("John");
-        accountHolder.setLastName("Doe");
-        accountHolder.setUUID(clientUuid);
-
+        // Mock AccountResponseDTO
         accountResponseDTO = new AccountResponseDTO();
         accountResponseDTO.setAccountId(1);
-        accountResponseDTO.setAccountHolderDTO(accountHolder);
         accountResponseDTO.setAccountNumber(accountRequestDTO.getAccountNumber());
         accountResponseDTO.setAccountType(accountRequestDTO.getAccountType());
         accountResponseDTO.setBalance(accountRequestDTO.getBalance());
         accountResponseDTO.setUUID(clientUuid);
-        accountResponseDTO.setCreatedAt(null);
-        accountResponseDTO.setLastUpdated(null);
 
-        clientRequestDTO = new ClientRequestDTO();
-        clientRequestDTO.setFirstName("John");
-        clientRequestDTO.setLastName("Doe");
-        clientRequestDTO.setTaxNumber("123456789");
-        clientRequestDTO.setDateOfBirth("07/07/1992");
-        clientRequestDTO.setEmail("john.doe@example.com");
-        clientRequestDTO.setPhoneNumber("123-456-7890");
-        clientRequestDTO.setAddress("123 Main St");
-
-
-        account = new Account();
-        account = mapper.accountRequestDtoToAccount(accountRequestDTO);
-
+        // Mock Client
         client = new Client();
-        client.setFirstName("John");
-        client.setLastName("Doe");
-        client.setTaxNumber("123456789");
-        client.setDateOfBirth("07/07/1992");
-        client.setEmail("john.doe@example.com");
-        client.setPhoneNumber("123-456-7890");
-        client.setAddress("123 Main St");
         client.setUUID(clientUuid);
-        client.setCreatedAt(null);
-        client.setUpdatedAt(null);
 
-        accountInfoDTO = new AccountInfoDTO();
-        accountInfoDTO = mapper.accountToAccountInfoDto(account);
+        // Mock Account
+        account = new Account();
+        account.setUUID(clientUuid);
+        account.setAccountNumber(accountNumber);
+        account.setAccountType(AccountType.CHECKING);
 
+        accountList = new ArrayList<>();
     }
 
     @Test
     public void testCreateCheckingAccount() {
-        accountList = new ArrayList<>();
+        // Mock dependencies
         accountList.add(account);
-
-        when(clientRepository.findClientByUUID(accountRequestDTO.getClientUUID())).thenReturn(Optional.ofNullable(client));
-        when(accountRepository.findAccountsByAccountTypeAndClientUUID(accountRequestDTO.getAccountType(), accountRequestDTO.getClientUUID())).thenReturn(accountList);
+        when(clientRepository.findClientByUUID(clientUuid)).thenReturn(Optional.of(client));
+        when(accountRepository.findAccountsByAccountTypeAndClientUUID(AccountType.CHECKING, clientUuid)).thenReturn(accountList);
         when(mapper.accountRequestDtoToAccount(accountRequestDTO)).thenReturn(account);
         when(mapper.accountToAccountResponseDto(account)).thenReturn(accountResponseDTO);
 
+        // Call method under test
+        AccountResponseDTO response = accountService.createCheckingAccount(accountRequestDTO);
 
-        verify(clientRepository, times(1)).findClientByUUID(accountRequestDTO.getClientUUID());
-        verify(accountRepository, times(1)).findAccountsByAccountTypeAndClientUUID(accountRequestDTO.getAccountType(), accountRequestDTO.getClientUUID());
+        // Assertions
+        assertNotNull(response);
+        assertEquals(accountResponseDTO, response);
+
+        // Verify interactions
+        verify(clientRepository, times(1)).findClientByUUID(clientUuid);
+        verify(accountRepository, times(1)).findAccountsByAccountTypeAndClientUUID(AccountType.CHECKING, clientUuid);
+        verify(mapper, times(1)).accountRequestDtoToAccount(accountRequestDTO);
+        verify(mapper, times(1)).accountToAccountResponseDto(account);
     }
 
     @Test
     public void testCreateCheckingAccount_ClientNotFound() {
-        when(clientRepository.findClientByUUID(accountRequestDTO.getClientUUID())).thenReturn(Optional.empty());
+        // Mock client not found
+        when(clientRepository.findClientByUUID(clientUuid)).thenReturn(Optional.empty());
 
+        // Call method and assert exception
         assertThrows(ClientNotFoundException.class, () -> accountService.createCheckingAccount(accountRequestDTO));
 
-        verify(clientRepository, times(1)).findClientByUUID(accountRequestDTO.getClientUUID());
-        verify(accountRepository, never()).findAccountByAccountNumber(anyString());
-        verify(accountRepository, never()).save(any(Account.class));
+        // Verify interactions
+        verify(clientRepository, times(1)).findClientByUUID(clientUuid);
+        verify(accountRepository, never()).findAccountsByAccountTypeAndClientUUID(any(), any());
     }
 
     @Test
     public void testCreateCheckingAccount_LimitOfBankAccountsExceeded_SameAccountType() {
-        accountList = new ArrayList<>();
+        // Mock max accounts of the same type
         accountList.add(account);
         accountList.add(account);
-        accountList.add(account);
+        accountList.add(account); // Exceeds limit
+        when(clientRepository.findClientByUUID(clientUuid)).thenReturn(Optional.of(client));
+        when(accountRepository.findAccountsByAccountTypeAndClientUUID(AccountType.CHECKING, clientUuid)).thenReturn(accountList);
 
-        when(clientRepository.findClientByUUID(accountRequestDTO.getClientUUID())).thenReturn(Optional.ofNullable(client));
-        when(accountRepository.findAccountsByAccountTypeAndClientUUID(accountRequestDTO.getAccountType(), accountRequestDTO.getClientUUID())).thenReturn(accountList);
-
+        // Call method and assert exception
         assertThrows(AccountNumberQuantityException.class, () -> accountService.createCheckingAccount(accountRequestDTO));
 
-        verify(accountRepository, times(1)).findAccountsByAccountType(accountRequestDTO.getAccountType());
+        // Verify interactions
+        verify(clientRepository, times(1)).findClientByUUID(clientUuid);
+        verify(accountRepository, times(1)).findAccountsByAccountTypeAndClientUUID(AccountType.CHECKING, clientUuid);
+        verify(accountRepository, never()).save(any(Account.class));
     }
 }

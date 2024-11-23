@@ -54,11 +54,10 @@ public class MapStructMapperImpl implements MapStructMapper {
 
     @Override
     public List<ClientsInfoDTO> clientsToClientInfoDto(List<Client> clients) {
-
-        ClientsInfoDTO clientInfoDTO = new ClientsInfoDTO();
         List<ClientsInfoDTO> clientsInfoDTOList = new ArrayList<>();
 
         for (Client client : clients) {
+            ClientsInfoDTO clientInfoDTO = new ClientsInfoDTO();
             clientInfoDTO.setFirstName(client.getFirstName());
             clientInfoDTO.setLastName(client.getLastName());
             clientInfoDTO.setEmail(client.getEmail());
