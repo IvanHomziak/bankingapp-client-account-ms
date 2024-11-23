@@ -66,9 +66,12 @@ public class GlobalExceptionHandler {
             }
 
             HttpStatus status = HttpStatus.INTERNAL_SERVER_ERROR;
-            return handleExceptionInternal(ex, null, headers, status, request);
+            // Ensure ErrorDTO is not null
+            ErrorDTO errorDTO = new ErrorDTO(ex.getMessage());
+            return handleExceptionInternal(ex, errorDTO, headers, status, request);
         }
     }
+
 
     /**
      * Customize the response for ClientNotFoundException.
