@@ -47,4 +47,18 @@ public class Account {
     @ManyToOne
     @JoinColumn(name = "client_id", nullable = false)
     private Client client;
+
+    @Override
+    public String toString() {
+        return "Account{" +
+                "accountId=" + accountId +
+                ", accountNumber='" + accountNumber + '\'' +
+                ", accountType=" + accountType +
+                ", balance=" + balance +
+                ", createdAt=" + createdAt +
+                ", lastUpdate=" + lastUpdate +
+                ", UUID='" + UUID + '\'' +
+                ", clientUUID=" + (client != null ? client.getUUID() : "null") +
+                '}';
+    }
 }

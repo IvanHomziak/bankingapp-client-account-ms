@@ -69,15 +69,15 @@ public class Client {
                 "clientId=" + clientId +
                 ", firstName='" + firstName + '\'' +
                 ", lastName='" + lastName + '\'' +
-                ", taxNumber='" + taxNumber + '\'' +
                 ", dateOfBirth='" + dateOfBirth + '\'' +
+                ", taxNumber='" + taxNumber + '\'' +
                 ", email='" + email + '\'' +
                 ", phoneNumber='" + phoneNumber + '\'' +
                 ", address='" + address + '\'' +
                 ", createdAt=" + createdAt +
                 ", updatedAt=" + updatedAt +
                 ", UUID='" + UUID + '\'' +
-                ", account=" + account +
+                ", accountIds=" + (account != null ? account.stream().map(Account::getAccountId).toList() : "[]") +
                 '}';
     }
 }
