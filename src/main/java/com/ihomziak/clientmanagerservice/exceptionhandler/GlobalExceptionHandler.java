@@ -41,7 +41,7 @@ public class GlobalExceptionHandler {
             return handleException(clientNotFoundException, headers, status, request);
 
         } else if (ex instanceof AccountNotFoundException accountNotFoundException) {
-            HttpStatus status = HttpStatus.BAD_REQUEST;
+            HttpStatus status = HttpStatus.NOT_FOUND;
             return handleException(accountNotFoundException, headers, status, request);
 
         } else if (ex instanceof AccountAlreadyExistException accountException) {

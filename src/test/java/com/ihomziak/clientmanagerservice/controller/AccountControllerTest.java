@@ -3,13 +3,10 @@ package com.ihomziak.clientmanagerservice.controller;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.databind.SerializationFeature;
 import com.fasterxml.jackson.datatype.jsr310.JavaTimeModule;
-import com.ihomziak.clientmanagerservice.dto.AccountHolderDTO;
-import com.ihomziak.clientmanagerservice.dto.AccountInfoDTO;
-import com.ihomziak.clientmanagerservice.dto.AccountRequestDTO;
-import com.ihomziak.clientmanagerservice.dto.AccountResponseDTO;
-import com.ihomziak.clientmanagerservice.exceptionhandler.GlobalExceptionHandler;
+import com.ihomziak.clientmanagerservice.dto.*;
 import com.ihomziak.clientmanagerservice.exception.AccountNotFoundException;
 import com.ihomziak.clientmanagerservice.exception.ClientNotFoundException;
+import com.ihomziak.clientmanagerservice.exceptionhandler.GlobalExceptionHandler;
 import com.ihomziak.clientmanagerservice.service.AccountService;
 import com.ihomziak.transactioncommon.utils.AccountType;
 import org.junit.jupiter.api.BeforeEach;
@@ -23,6 +20,7 @@ import org.springframework.test.web.servlet.MockMvc;
 import org.springframework.test.web.servlet.setup.MockMvcBuilders;
 
 import java.util.ArrayList;
+import java.util.Collections;
 import java.util.List;
 
 import static org.mockito.ArgumentMatchers.any;
@@ -38,7 +36,7 @@ public class AccountControllerTest {
     private AccountService accountService;
 
     @InjectMocks
-    private AccountController clientController;
+    private AccountController accountController;
 
     private MockMvc mockMvc;
 
@@ -50,8 +48,8 @@ public class AccountControllerTest {
 
     @BeforeEach
     public void setUp() {
-        mockMvc = MockMvcBuilders.standaloneSetup(clientController)
-                .setControllerAdvice(new GlobalExceptionHandler()) // Ensure this is added
+        mockMvc = MockMvcBuilders.standaloneSetup(accountController)
+                .setControllerAdvice(new GlobalExceptionHandler())
                 .build();
 
         objectMapper = new ObjectMapper();
@@ -71,7 +69,7 @@ public class AccountControllerTest {
         accountRequestDTO.setAccountNumber(accountNumber);
         accountRequestDTO.setAccountType(AccountType.CHECKING);
         accountRequestDTO.setBalance(1000);
-        accountRequestDTO.setClientUUID("206625ce-3ee7-4174-8f92-4bdc41c18274");
+        accountRequestDTO.setClientUUID(clientUuid);
 
         AccountHolderDTO accountHolder = new AccountHolderDTO();
         accountHolder.setFirstName("John");
@@ -91,7 +89,6 @@ public class AccountControllerTest {
 
     @Test
     public void getAccount_ShouldReturnAccount_WhenAccountExists() throws Exception {
-
         when(accountService.findAccountByUuid(clientUuid)).thenReturn(accountInfoDTO);
 
         mockMvc.perform(get("/api/account/{uuid}", clientUuid)
@@ -104,29 +101,27 @@ public class AccountControllerTest {
     public void getAccount_ShouldReturnNotFound_WhenAccountDoesNotExist() throws Exception {
         String uuid = "non-existent-uuid";
 
-        when(accountService.findAccountByUuid(uuid)).thenThrow(new ClientNotFoundException("Account not exist. UUID: " + uuid));
+        when(accountService.findAccountByUuid(uuid)).thenThrow(new AccountNotFoundException("Account not exist. UUID: " + uuid));
 
-        mockMvc.perform(get("/api/account/{uuid}", uuid).contentType(MediaType.APPLICATION_JSON))
+        mockMvc.perform(get("/api/account/{uuid}", uuid)
+                        .contentType(MediaType.APPLICATION_JSON))
                 .andExpect(status().isNotFound())
-                .andExpect(content().json("{\"error\":\"Account not exist. UUID: non-existent-uuid\"}"));
+                .andExpect(content().json("{\"error\":\"Account not exist. UUID: " + uuid + "\"}"));
     }
 
     @Test
-    void createCheckingAccount() throws Exception {
+    public void createCheckingAccount_ShouldReturnCreatedAccount() throws Exception {
         when(accountService.createCheckingAccount(any(AccountRequestDTO.class))).thenReturn(accountResponseDTO);
-
 
         mockMvc.perform(post("/api/account")
                         .contentType(MediaType.APPLICATION_JSON)
                         .content(objectMapper.writeValueAsString(accountRequestDTO)))
                 .andExpect(status().isCreated())
                 .andExpect(content().json(objectMapper.writeValueAsString(accountResponseDTO)));
-
-
     }
 
     @Test
-    void deleteAccount_ShouldReturnAccountResponseDto_WhenAccountExists() throws Exception {
+    public void deleteAccount_ShouldReturnAccepted_WhenAccountExists() throws Exception {
         when(accountService.deleteAccount(clientUuid)).thenReturn(accountInfoDTO);
 
         mockMvc.perform(delete("/api/account/{uuid}", clientUuid))
@@ -135,15 +130,16 @@ public class AccountControllerTest {
     }
 
     @Test
-    void deleteAccount_ShouldReturnAccountNotFound_WhenAccountNotExists() throws Exception {
+    public void deleteAccount_ShouldReturnNotFound_WhenAccountNotExists() throws Exception {
         when(accountService.deleteAccount(clientUuid)).thenThrow(new AccountNotFoundException("Account not exist. UUID: " + clientUuid));
 
         mockMvc.perform(delete("/api/account/{uuid}", clientUuid))
+                .andExpect(status().isNotFound())
                 .andExpect(content().json("{\"error\":\"Account not exist. UUID: " + clientUuid + "\"}"));
     }
 
     @Test
-    void updateAccount() throws Exception {
+    public void updateAccount_ShouldReturnUpdatedAccount() throws Exception {
         when(accountService.updateAccount(any(AccountRequestDTO.class))).thenReturn(accountResponseDTO);
 
         mockMvc.perform(patch("/api/account")
@@ -154,7 +150,7 @@ public class AccountControllerTest {
     }
 
     @Test
-    void getAccounts() throws Exception {
+    public void getAccounts_ShouldReturnListOfAccounts() throws Exception {
         List<AccountInfoDTO> accountInfoDTOList = new ArrayList<>();
         accountInfoDTOList.add(accountInfoDTO);
         accountInfoDTOList.add(accountInfoDTO);
@@ -162,8 +158,30 @@ public class AccountControllerTest {
         when(accountService.findAllAccounts()).thenReturn(accountInfoDTOList);
 
         mockMvc.perform(get("/api/account")
-                .contentType(MediaType.APPLICATION_JSON))
+                        .contentType(MediaType.APPLICATION_JSON))
                 .andExpect(status().isFound())
                 .andExpect(content().json(objectMapper.writeValueAsString(accountInfoDTOList)));
+    }
+
+    @Test
+    public void getAccounts_ShouldReturnEmptyList_WhenNoAccountsExist() throws Exception {
+        when(accountService.findAllAccounts()).thenReturn(Collections.emptyList());
+
+        mockMvc.perform(get("/api/account")
+                        .contentType(MediaType.APPLICATION_JSON))
+                .andExpect(status().isFound())
+                .andExpect(content().json("[]"));
+    }
+
+    @Test
+    public void getClientAccounts_ShouldReturnListOfClientAccounts() throws Exception {
+        List<AccountResponseDTO> clientAccounts = List.of(accountResponseDTO);
+
+        when(accountService.findAllAccountsByClientUUID(clientUuid)).thenReturn(clientAccounts);
+
+        mockMvc.perform(get("/api/account/list/{uuid}", clientUuid)
+                        .contentType(MediaType.APPLICATION_JSON))
+                .andExpect(status().isFound())
+                .andExpect(content().json(objectMapper.writeValueAsString(clientAccounts)));
     }
 }
