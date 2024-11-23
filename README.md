@@ -1,151 +1,161 @@
-# Web Banking Application
+# Client Manager Service
 
-## Overview
+The **Client Manager Service** is a Spring Boot-based application designed for managing client and account data efficiently. It supports CRUD operations for clients and accounts, implements Kafka integration for handling transaction events, and uses MySQL for database persistence.
 
-The Web Banking Application is a RESTful API designed to manage banking operations such as creating accounts, managing clients, and performing various banking transactions. 
-The API is developed using Spring Boot and follows a layered architecture with clear separation between controllers, services, and repositories.
+---
 
-## Table of Contents
+## Features
 
-- [Installation](#installation)
-- [Technologies](#technologies)
-- [Project Structure](#project-structure)
-- [API Endpoints](#api-endpoints)
-- [DTOs](#dtos)
-- [Services](#services)
-- [Repositories](#repositories)
-- [Exceptions](#exceptions)
-- [Testing](#testing)
-- [Contributing](#contributing)
+- **Client Management**: Add, update, retrieve, and delete client information.
+- **Account Management**: Manage checking accounts with support for creation, update, deletion, and retrieval of account details.
+- **Kafka Integration**: Consume and produce messages for transaction processing.
+- **Database Integration**: Persistent storage using MySQL with JPA and Hibernate.
+- **Exception Handling**: Centralized handling of application-specific exceptions.
 
+---
 
+## Technologies Used
 
-## Technologies Used:
-- Java
-- Spring Boot
-- Spring Data JPA
-- MapStruct
-- JUnit
-- Docker
-- MySQL
-- Hibernate
-- Jackson
-- Maven
+- **Java**: Version 17.
+- **Spring Boot**: REST APIs, validation, and dependency injection.
+- **Kafka**: Message streaming for transaction processing.
+- **MySQL**: Relational database management.
+- **Hibernate/JPA**: ORM for database interactions.
+- **Docker**: Containerization for application and database.
 
+---
 
+## Prerequisites
 
-## Installation
+1. **Java**: Install JDK 17 or higher.
+2. **Maven**: For building the application.
+3. **Docker**: For running the application in a containerized environment.
+4. **Kafka**: Kafka setup with appropriate configurations.
 
-1. **Clone the repository:**
-   ```bash
-   git clone https://github.com/IvanHomziak/webbankingapp.git
-   cd web-banking-app
+---
 
-2. **Build the project:**
-Ensure you have Maven installed.
-- mvn clean install
+## Setup and Installation
 
-3. **Run the application:**
-- mvn spring-boot:run
+### 1. Clone the Repository
+```bash
+git clone https://github.com/IvanHomziak/client-manager-service.git
+cd client-manager-service
+```
 
-4. **Access the API:**
-The API will be available at http://localhost:8080/api.
+### 2. Configure Environment Variables
+Set up the required environment variables in an `.env` file or in the system:
 
-## Project Structure
-com.ihomziak.clientmanagerservice.controller: Contains REST controllers for handling client and account-related requests.
-com.ihomziak.clientmanagerservice.service: Business logic for managing clients and accounts.
-com.ihomziak.clientmanagerservice.dao: Interfaces for database operations, using Spring Data JPA.
-com.ihomziak.clientmanagerservice.dto: Data Transfer Objects (DTOs) for transferring data between layers.
-com.ihomziak.clientmanagerservice.entity: JPA entities representing the database tables.
-com.ihomziak.clientmanagerservice.enums: Enumerations used across the application.
-com.ihomziak.clientmanagerservice.exception: Custom exceptions for handling errors.
-com.ihomziak.clientmanagerservice.utils: Utility classes for various functions.
+```plaintext
+DB_HOST=mysqldb-cms-c
+DB_NAME=clients_db
+DB_USER=root
+DB_PASS=admin1234
+```
 
-## API Endpoints
-**Account Controller**
+### 3. Build the Application
+Build the project using Maven:
+```bash
+mvn clean install
+```
 
-Get Account by UUID
+### 4. Run the Application
+Run the application locally:
+```bash
+java -jar target/client-manager-service.jar
+```
 
-**GET** /api/account/{uuid}
-Returns account details for the given UUID.
-Get All Client Accounts
+---
 
-**GET** /api/account/list/{uuid}
-Returns a list of all accounts associated with a client UUID.
-Create Checking Account
+## Running with Docker
 
-**POST** /api/account
-Creates a new checking account.
-Delete Account
+### 1. Start MySQL with Docker
+Start the MySQL container using the provided `docker-compose.yml` file:
+```bash
+docker-compose up -d mysqldb
+```
 
-**DELETE** /api/account/{uuid}
-Deletes an account by UUID.
-Update Account
+### 2. Build and Run the Service
+Uncomment the service in `docker-compose.yml` and then:
+```bash
+docker-compose up --build
+```
 
-**PATCH** /api/account
-Updates an existing account's details.
-Get All Accounts
+---
 
-**GET** /api/account
-Returns a list of all accounts in the system.
-Client Controller
-Add Client
+## REST API Endpoints
 
+### Client Endpoints
+| Method | Endpoint               | Description                   |
+|--------|------------------------|-------------------------------|
+| GET    | `/api/clients`         | Get all clients               |
+| GET    | `/api/clients/{uuid}`  | Get client by UUID            |
+| POST   | `/api/clients`         | Add a new client              |
+| PATCH  | `/api/clients/update`  | Update client details         |
+| DELETE | `/api/clients/{uuid}`  | Delete client by UUID         |
 
+### Account Endpoints
+| Method | Endpoint               | Description                   |
+|--------|------------------------|-------------------------------|
+| GET    | `/api/account`         | Get all accounts              |
+| GET    | `/api/account/{uuid}`  | Get account by UUID           |
+| POST   | `/api/account`         | Create a new account          |
+| PATCH  | `/api/account`         | Update account details        |
+| DELETE | `/api/account/{uuid}`  | Delete account by UUID        |
 
-**Client Controller**
+---
 
-**POST** /api/clients
-Adds a new client.
-Get Client by UUID
+## Kafka Integration
 
-**GET** /api/clients/{uuid}
-Returns client details for the given UUID.
-Get All Clients
+### Topics Used
+- **`transfer-transactions-topic`**: Consumed by the service to process transaction events.
+- **`transaction-results-topic`**: Produced by the service to communicate transaction results.
 
-**GET** /api/clients
-Returns a list of all clients.
-Delete Client
+---
 
-**DELETE** /api/clients/{uuid}
-Deletes a client by UUID.
-Update Client
+## Database Schema
 
-**PATCH** /api/clients/update
-Updates an existing client's details.
+### **Clients Table**
+| Column Name      | Type        | Description          |
+|------------------|-------------|----------------------|
+| `client_id`      | BIGINT      | Primary key          |
+| `first_name`     | VARCHAR     | Client's first name  |
+| `last_name`      | VARCHAR     | Client's last name   |
+| `email`          | VARCHAR     | Email address        |
+| `phone_number`   | VARCHAR     | Phone number         |
+| `uuid`           | VARCHAR     | Unique identifier    |
 
-## DTOs
+### **Accounts Table**
+| Column Name      | Type        | Description          |
+|------------------|-------------|----------------------|
+| `account_id`     | BIGINT      | Primary key          |
+| `account_number` | VARCHAR     | Unique account number|
+| `balance`        | DOUBLE      | Account balance      |
+| `uuid`           | VARCHAR     | Unique identifier    |
 
-AccountInfoDTO: Represents basic account information.
-AccountRequestDTO: Represents a request to create or update an account.
-AccountResponseDTO: Represents detailed account information, including account holder details.
-ClientRequestDTO: Represents a request to create or update a client.
-ClientResponseDTO: Represents detailed client information.
-ClientsInfoDTO: Represents basic client information.
-ErrorDTO: Represents error details for error handling.
+---
 
-## Services
+## Exception Handling
 
-AccountService: Interface for account-related operations.
-ClientService: Interface for client-related operations.
+The application has centralized exception handling for:
+- ClientNotFoundException
+- AccountNotFoundException
+- ClientAlreadyExistException
+- NonSufficientFundsException
 
-## Repositories
+These are handled by a global exception handler to provide user-friendly error messages.
 
-AccountRepository: Handles data operations related to accounts.
-ClientRepository: Handles data operations related to clients.
+---
 
-## Exceptions
+## Contributions
 
-AccountNotFoundException: Thrown when an account is not found.
-ClientNotFoundException: Thrown when a client is not found.
-ClientAlreadyExistException: Thrown when attempting to create a client that already exists.
-AccountNumberQuantityException: Thrown when the maximum number of accounts of a certain type is exceeded.
+Feel free to fork the repository and create a pull request to contribute.
 
-## Testing
+---
 
-The application includes unit and integration tests to ensure the correctness of the business logic and API endpoints.
+## License
 
+This project is licensed under the MIT License. See the `LICENSE` file for details.
 
+---
 
-
-
+Let me know if you'd like further refinements!
