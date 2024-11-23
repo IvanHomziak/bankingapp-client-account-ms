@@ -7,7 +7,7 @@ import com.ihomziak.clientmanagerservice.entity.Account;
 import com.ihomziak.clientmanagerservice.entity.Client;
 import com.ihomziak.clientmanagerservice.exception.AccountNumberQuantityException;
 import com.ihomziak.clientmanagerservice.mapper.MapStructMapper;
-import com.ihomziak.transactioncommon.AccountType;
+import com.ihomziak.transactioncommon.utils.AccountType;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
