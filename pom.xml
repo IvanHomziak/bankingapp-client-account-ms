@@ -21,6 +21,10 @@
         <jackson.version>2.17.1</jackson.version>
         <jacoco.maven.plugin.version>0.8.8</jacoco.maven.plugin.version>
         <maven.scm.plugin.version>1.11.3</maven.scm.plugin.version>
+        <maven.compiler.source>17</maven.compiler.source>
+        <maven.compiler.target>17</maven.compiler.target>
+        <spring-cloud.version>2024.0.0</spring-cloud.version>
+        <jwt.version>0.12.6</jwt.version>
     </properties>
 
     <dependencies>
