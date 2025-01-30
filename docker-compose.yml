@@ -14,7 +14,7 @@ services:
     ports:
       - "3307:3306"
     networks:
-      - springapimysql-net
+      - client-account-ms-net
     volumes:
       - ./mysql-init:/docker-entrypoint-initdb.d/ # path to script which should create database
     healthcheck:
@@ -23,21 +23,21 @@ services:
       timeout: 10s
       retries: 3
 
-  client-manager-service-app:
-    container_name: client-manager-service
+  client-account-ms-app:
+    container_name: client-account-ms
     build:
       context: .
       dockerfile: Dockerfile
     restart: always
     ports:
-      - "9090:9090"
+      - "8083:8083"
     env_file:
           - .env.docker
     networks:
-      - springapimysql-net
+      - client-account-ms-net
     depends_on:
       mysqldb:
         condition: service_healthy
 
 networks:
-  springapimysql-net:
+  client-account-ms-net:

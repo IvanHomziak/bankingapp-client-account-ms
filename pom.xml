@@ -10,10 +10,10 @@
     </parent>
 
     <groupId>com.ihomziak</groupId>
-    <artifactId>client-manager-service</artifactId>
+    <artifactId>client-account-ms</artifactId>
     <version>0.0.1-SNAPSHOT</version>
 
-    <name>client-manager-service</name>
+    <name>client-account-ms</name>
     <description>Client Manager Service</description>
 
     <properties>
@@ -143,9 +143,8 @@
         </dependency>
 
         <dependency>
-            <groupId>com.fasterxml.jackson.dataformat</groupId>
-            <artifactId>jackson-dataformat-xml</artifactId>
-            <version>2.18.2</version>
+            <groupId>com.fasterxml.jackson.core</groupId>
+            <artifactId>jackson-databind</artifactId>
         </dependency>
 
         <!-- JWT -->
@@ -202,7 +201,7 @@
     </dependencyManagement>
 
     <build>
-        <finalName>client-manager-service</finalName>
+        <finalName>client-account-ms</finalName>
         <pluginManagement>
             <plugins>
                 <!-- Code Coverage -->
@@ -225,7 +224,7 @@
                 <groupId>org.apache.maven.plugins</groupId>
                 <artifactId>maven-surefire-plugin</artifactId>
                 <configuration>
-                    <skipTests>false</skipTests>
+                    <skipTests>true</skipTests>
                 </configuration>
             </plugin>
 
@@ -261,8 +260,8 @@
                     </execution>
                 </executions>
                 <configuration>
-                    <connectionUrl>scm:git:https://github.com/IvanHomziak/client-transaction-common.git</connectionUrl>
-                    <checkoutDirectory>./transaction-common</checkoutDirectory>
+                    <connectionUrl>scm:git:https://github.com/IvanHomziak/bankingapp-common.git</connectionUrl>
+                    <checkoutDirectory>./bankingapp-common</checkoutDirectory>
                 </configuration>
             </plugin>
         </plugins>

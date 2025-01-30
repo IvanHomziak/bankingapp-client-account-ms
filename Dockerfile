@@ -1,11 +1,8 @@
-#
-# Build stage
-#
-# The base image on which we would build our image
+# Base image
 FROM openjdk:18-jdk-alpine
 
-# Install curl and maven
-RUN apk --no-cache add curl maven
+# Install required dependencies
+RUN apk --no-cache add git curl maven
 
 # Set environment variables
 ENV DB_HOST=${DB_HOST}
@@ -13,24 +10,31 @@ ENV DB_NAME=${DB_NAME}
 ENV DB_USER=${DB_USER}
 ENV DB_PASS=${DB_PASS}
 
-# Expose port 9090
-EXPOSE 9090
+# Expose application port
+EXPOSE 8083
 
-# Set the working directory
+# Set working directory
 WORKDIR /app
 
-# Copy the pom.xml file to the working directory
+# Clone and build bankingapp-common
+RUN git clone https://github.com/IvanHomziak/bankingapp-common.git && \
+    cd bankingapp-common && \
+    mvn clean install -DskipTests
+
+# Go back to /app directory
+WORKDIR /app
+
+# Copy project files (excluding `src` to use caching efficiently)
 COPY pom.xml .
 
-# Resolve the dependencies in the pom.xml file
+# Resolve dependencies (this speeds up builds by using caching)
 RUN mvn dependency:resolve
 
-# Copy the source code to the working directory
+# Copy the rest of the source code
 COPY src src
 
 # Build the project
-RUN mvn package -DskipTests
+RUN mvn clean package -DskipTests
 
 # Run the application
-ENTRYPOINT ["java", "-jar", "target/client-manager-service.jar"]
-
+ENTRYPOINT ["java", "-jar", "target/client-account-ms.jar"]

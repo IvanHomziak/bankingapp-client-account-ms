@@ -38,8 +38,8 @@ The **Client Manager Service** is a Spring Boot-based application designed for m
 
 ### 1. Clone the Repository
 ```bash
-git clone https://github.com/IvanHomziak/client-manager-service.git
-cd client-manager-service
+git clone https://github.com/IvanHomziak/bankingapp-client-account-ms.git
+cd client-account-ms
 ```
 
 ### 2. Configure Environment Variables
@@ -61,7 +61,7 @@ mvn clean install
 ### 4. Run the Application
 Run the application locally:
 ```bash
-java -jar target/client-manager-service.jar
+java -jar target/client-account-ms.jar
 ```
 
 ---
