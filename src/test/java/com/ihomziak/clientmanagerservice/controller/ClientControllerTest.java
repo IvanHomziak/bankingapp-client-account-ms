@@ -87,7 +87,7 @@ public class ClientControllerTest {
                 .contentType(MediaType.APPLICATION_JSON)
                 .content(objectMapper.writeValueAsString(clientRequestDTO)))
                 .andExpect(status().isCreated())
-                .andExpect(jsonPath("$.firstName").value("John"))
+                .andExpect(jsonPath("$.firstName").value(clientResponseDTO.getFirstName()))
                 .andExpect(jsonPath("$.lastName").value(clientResponseDTO.getLastName()))
                 .andExpect(jsonPath("$.dateOfBirth").value(clientResponseDTO.getDateOfBirth()))
                 .andExpect(jsonPath("$.taxNumber").value(clientResponseDTO.getTaxNumber()))

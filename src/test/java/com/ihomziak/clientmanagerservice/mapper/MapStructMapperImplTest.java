@@ -4,7 +4,7 @@ import com.ihomziak.clientmanagerservice.dto.*;
 import com.ihomziak.clientmanagerservice.entity.Account;
 import com.ihomziak.clientmanagerservice.entity.Client;
 import com.ihomziak.clientmanagerservice.mapper.impl.MapStructMapperImpl;
-import com.ihomziak.transactioncommon.utils.AccountType;
+import com.ihomziak.bankingapp.common.utils.AccountType;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 

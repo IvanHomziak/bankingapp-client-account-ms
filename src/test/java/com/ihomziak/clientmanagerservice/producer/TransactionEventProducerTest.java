@@ -1,20 +1,20 @@
 package com.ihomziak.clientmanagerservice.producer;
 
-import com.fasterxml.jackson.core.JsonProcessingException;
-import com.fasterxml.jackson.databind.ObjectMapper;
-import com.ihomziak.clientmanagerservice.dto.TransactionEventRequestDTO;
-import com.ihomziak.transactioncommon.utils.TransactionStatus;
-import org.junit.jupiter.api.BeforeEach;
-import org.junit.jupiter.api.Test;
-import org.mockito.*;
-import org.springframework.kafka.core.KafkaTemplate;
-import org.springframework.kafka.support.SendResult;
-import org.springframework.util.concurrent.SettableListenableFuture;
-
-import java.util.concurrent.CompletableFuture;
-
-import static org.junit.jupiter.api.Assertions.assertNotNull;
-import static org.mockito.Mockito.*;
+//import com.fasterxml.jackson.core.JsonProcessingException;
+//import com.fasterxml.jackson.databind.ObjectMapper;
+//import com.ihomziak.clientmanagerservice.dto.TransactionEventRequestDTO;
+//import com.ihomziak.bankingapp.common.utils.TransactionStatus;
+//import org.junit.jupiter.api.BeforeEach;
+//import org.junit.jupiter.api.Test;
+//import org.mockito.*;
+//import org.springframework.kafka.core.KafkaTemplate;
+//import org.springframework.kafka.support.SendResult;
+//import org.springframework.util.concurrent.SettableListenableFuture;
+//
+//import java.util.concurrent.CompletableFuture;
+//
+//import static org.junit.jupiter.api.Assertions.assertNotNull;
+//import static org.mockito.Mockito.*;
 
 class TransactionEventProducerTest {
 //

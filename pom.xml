@@ -104,8 +104,8 @@
 
         <!-- Custom Common Dependency -->
         <dependency>
-            <groupId>com.ihomziak.transactioncommon</groupId>
-            <artifactId>client-transaction-common</artifactId>
+            <groupId>com.ihomziak.bankingapp.common</groupId>
+            <artifactId>bankingapp-common</artifactId>
             <version>1.0-SNAPSHOT</version>
         </dependency>
 

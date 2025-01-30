@@ -8,7 +8,7 @@ import com.ihomziak.clientmanagerservice.exception.AccountNotFoundException;
 import com.ihomziak.clientmanagerservice.exception.ClientNotFoundException;
 import com.ihomziak.clientmanagerservice.exceptionhandler.GlobalExceptionHandler;
 import com.ihomziak.clientmanagerservice.service.AccountService;
-import com.ihomziak.transactioncommon.utils.AccountType;
+import com.ihomziak.bankingapp.common.utils.AccountType;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;

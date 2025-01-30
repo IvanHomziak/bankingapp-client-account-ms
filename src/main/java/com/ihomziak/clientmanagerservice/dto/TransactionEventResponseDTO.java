@@ -1,6 +1,6 @@
 package com.ihomziak.clientmanagerservice.dto;
 
-import com.ihomziak.transactioncommon.utils.TransactionStatus;
+import com.ihomziak.bankingapp.common.utils.TransactionStatus;
 import lombok.*;
 
 import java.util.Objects;

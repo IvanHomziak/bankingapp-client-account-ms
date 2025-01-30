@@ -1,7 +1,7 @@
 package com.ihomziak.clientmanagerservice.exceptionhandler;
 
 import com.ihomziak.clientmanagerservice.exception.*;
-import com.ihomziak.transactioncommon.dto.ErrorDTO;
+import com.ihomziak.bankingapp.common.dto.ErrorDTO;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.mockito.Mock;

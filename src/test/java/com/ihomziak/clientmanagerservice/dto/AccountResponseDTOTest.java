@@ -1,6 +1,6 @@
 package com.ihomziak.clientmanagerservice.dto;
 
-import com.ihomziak.transactioncommon.utils.AccountType;
+import com.ihomziak.bankingapp.common.utils.AccountType;
 import org.junit.jupiter.api.Test;
 
 import java.time.LocalDateTime;

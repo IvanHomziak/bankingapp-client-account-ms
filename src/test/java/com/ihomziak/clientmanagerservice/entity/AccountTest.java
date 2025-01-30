@@ -1,6 +1,6 @@
 package com.ihomziak.clientmanagerservice.entity;
 
-import com.ihomziak.transactioncommon.utils.AccountType;
+import com.ihomziak.bankingapp.common.utils.AccountType;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 

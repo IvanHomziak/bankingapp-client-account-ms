@@ -1,6 +1,6 @@
 package com.ihomziak.clientmanagerservice.dto;
 
-import com.ihomziak.transactioncommon.utils.TransactionStatus;
+import com.ihomziak.bankingapp.common.utils.TransactionStatus;
 import org.junit.jupiter.api.Test;
 
 import static org.junit.jupiter.api.Assertions.*;

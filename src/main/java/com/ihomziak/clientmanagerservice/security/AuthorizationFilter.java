@@ -1,6 +1,6 @@
 package com.ihomziak.clientmanagerservice.security;
 
-import com.ihomziak.transactioncommon.api.JwtClaimsParser;
+import com.ihomziak.bankingapp.common.api.JwtClaimsParser;
 import jakarta.servlet.FilterChain;
 import jakarta.servlet.ServletException;
 import jakarta.servlet.http.HttpServletRequest;
