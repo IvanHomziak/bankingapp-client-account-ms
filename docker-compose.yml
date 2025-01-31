@@ -35,9 +35,12 @@ services:
           - .env.docker
     networks:
       - client-account-ms-net
+      - bankingapp-network  # 🔹 Connect to global network
     depends_on:
       mysqldb:
         condition: service_healthy
 
 networks:
   client-account-ms-net:
+  bankingapp-network:
+    driver: bridge  # Connect to global network
