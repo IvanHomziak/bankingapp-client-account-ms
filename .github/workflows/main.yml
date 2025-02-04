@@ -39,7 +39,7 @@ jobs:
         run: mvn clean package -DskipTests
 
       - name: Define Image Tag
-        run: echo "IMAGE_TAG=$(date +'%Y%m%d-%H%M%S')" >> $GITHUB_ENV
+        run: echo "IMAGE_TAG=$(date +'%Y%m%d%H%M%S')" >> $GITHUB_ENV
 
       - name: Build Docker Image
         uses: docker/build-push-action@v4
