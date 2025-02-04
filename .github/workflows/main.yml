@@ -12,7 +12,7 @@ jobs:
 
     steps:
       # 1️⃣ Checkout основного репозиторію
-      - name: Checkout client-account-ms
+      - name: Checkout bankingapp-client-account-ms
         uses: actions/checkout@v4
 
       # 2️⃣ Checkout загального bankingapp-common
@@ -45,7 +45,7 @@ jobs:
         run: mvn verify
 
       # 7️⃣ Збірка JAR
-      - name: Build client-account-ms Application
+      - name: Build bankingapp-client-account-ms Application
         run: mvn clean package -DskipTests
 
       # 8️⃣ Визначення тегу образу (динамічний)
