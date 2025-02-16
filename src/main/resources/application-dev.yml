@@ -1,0 +1,107 @@
+spring:
+  application:
+    name: client-account-ms
+  config:
+    import: optional:configserver:http://localhost:8888
+  devtools:
+    restart:
+      enabled: true
+
+  # Datasource connection
+  sql:
+    init:
+      platform: mysql
+      mode: always
+  datasource:
+    url: jdbc:mysql://localhost:3307/${DB_NAME:clients_db}?createDatabaseIfNotExist=true&allowPublicKeyRetrieval=true
+    username: ${DB_USER:root}
+    password: ${DB_PASS:admin1234}
+
+  # Hibernate
+  data:
+    rest:
+      base-path: /api
+  jpa:
+    hibernate:
+      ddl-auto: update
+    properties:
+      hibernate:
+        dialect: org.hibernate.dialect.MySQLDialect
+        temp:
+          use_jdbc_metadata_defaults: false
+    show-sql: true
+
+  # Kafka Configuration
+  kafka:
+    template:
+      default-topic: transfer-transactions-topic
+    consumer:
+      bootstrap-servers: localhost:29092
+      key-deserializer: org.apache.kafka.common.serialization.IntegerDeserializer
+      value-deserializer: org.apache.kafka.common.serialization.StringDeserializer
+      # value-deserializer: org.springframework.kafka.support.serializer.JsonDeserializer
+      group-id: transaction-group
+      auto-offset-reset: earliest
+      properties:
+        spring.json.trusted.packages: "*"
+    producer:
+      bootstrap-servers: localhost:29092
+      key-serializer: org.apache.kafka.common.serialization.IntegerSerializer
+      value-serializer: org.apache.kafka.common.serialization.StringSerializer
+    topic:
+      transfer-transactions-topic: transfer-transactions-topic
+      transaction-results-topic: transaction-results-topic
+
+  # RabbitMQ
+  rabbitmq:
+    host: localhost
+    port: 5672
+    username: guest
+    password: guest
+    # cloud.config.import-check.enabled: true
+
+# Server Configuration
+server:
+  port: ${PORT:8084}
+
+# Eureka Configuration
+eureka:
+  client:
+    serviceUrl:
+      defaultZone: http://localhost:8010/eureka/
+    register-with-eureka: true
+    fetch-registry: true
+  instance:
+    instance-id: ${spring.application.name}:${spring.application.instance_id:${server.port}}
+
+# Logging Configuration
+logging:
+  level:
+    org:
+      springframework: ERROR
+      hibernate:
+        SQL: DEBUG
+        type:
+          descriptor:
+            sql:
+              BasicBinder: TRACE
+    com:
+      numericaideas: DEBUG
+  file:
+    name: client-account-ms.log
+
+# Management Endpoints
+management:
+  endpoints:
+    web:
+      exposure:
+        include: "*"
+
+# Authentication Configuration
+authorization:
+  token:
+    header:
+      name: Authorization
+      prefix: Bearer
+token:
+  secret: dgjorufhrsnjdu438fkdj38fdmcv7dm3ckvhrsnjjuwelueivhe848fhedldh5ndk
