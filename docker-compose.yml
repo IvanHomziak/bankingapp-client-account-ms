@@ -16,29 +16,12 @@ services:
     networks:
       - client-account-ms-net
     volumes:
-      - ./mysql-init:/docker-entrypoint-initdb.d/ # path to script which should create database
+      - ./mysql-camsdb:/docker-entrypoint-camsdbdb.d/ # path to script which should create database
     healthcheck:
       test: [ "CMD", "mysqladmin", "ping", "-h", "localhost", "-u", "root", "-padmin1234" ]
       interval: 30s
       timeout: 10s
       retries: 3
-
-  client-account-ms-app:
-    container_name: client-account-ms
-    build:
-      context: .
-      dockerfile: Dockerfile
-    restart: always
-    ports:
-      - "8083:8083"
-    env_file:
-          - .env.docker
-    networks:
-      - client-account-ms-net
-      - bankingapp-network  # 🔹 Connect to global network
-    depends_on:
-      mysqldb:
-        condition: service_healthy
 
 networks:
   client-account-ms-net:
