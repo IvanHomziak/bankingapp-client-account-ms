@@ -17,4 +17,6 @@ public interface ClientService {
     ClientResponseDTO updateClient(ClientRequestDTO clientRequestDTO);
 
     ClientResponseDTO findClientByUUID(String uuid);
+
+    ClientResponseDTO findClientByName(String firstName, String lastName);
 }

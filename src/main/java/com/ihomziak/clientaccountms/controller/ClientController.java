@@ -5,6 +5,8 @@ import com.ihomziak.clientaccountms.service.ClientService;
 import com.ihomziak.clientaccountms.dto.ClientRequestDTO;
 import com.ihomziak.clientaccountms.dto.ClientsInfoDTO;
 import jakarta.validation.Valid;
+import jakarta.ws.rs.QueryParam;
+
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
@@ -47,5 +49,13 @@ public class ClientController {
     @PatchMapping("/clients/update")
     public ResponseEntity<ClientResponseDTO> updateClient(@RequestBody @Valid ClientRequestDTO clientRequestDTO) {
         return ResponseEntity.status(HttpStatus.ACCEPTED).body(this.clientService.updateClient(clientRequestDTO));
+    }
+
+    @GetMapping("/clients/search")
+    public ResponseEntity<ClientResponseDTO> searchClient(
+        @QueryParam("firstName") String firstName,
+        @QueryParam("lastName") String lastName
+        ) {
+        return ResponseEntity.status(HttpStatus.FOUND).body(this.clientService.findClientByName(firstName,lastName));
     }
 }

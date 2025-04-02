@@ -113,4 +113,15 @@ public class ClientServiceImpl implements ClientService {
 
         return this.mapper.clientToClientResponseDto(theClient.get());
     }
+
+    // Selects data from a database using query language
+    @Override
+    public ClientResponseDTO findClientByName(final String firstName, final String lastName) {
+        Optional<Client> theClient = this.clientRepository.findByFirstNameAndLastNameIgnoreCase(firstName, lastName);
+
+        if (theClient.isEmpty()) {
+            throw new ClientNotFoundException(String.format("Client %s not found. Firstname: %s, Lastname: $s", firstName, lastName));
+        }
+        return this.mapper.clientToClientResponseDto(theClient.get());
+    }
 }

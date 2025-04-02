@@ -1,16 +1,19 @@
 package com.ihomziak.clientaccountms.controller;
 
-import com.fasterxml.jackson.databind.ObjectMapper;
-import com.fasterxml.jackson.databind.SerializationFeature;
-import com.fasterxml.jackson.datatype.jsr310.JavaTimeModule;
-import com.ihomziak.clientaccountms.dto.AccountHolderDTO;
-import com.ihomziak.clientaccountms.dto.AccountInfoDTO;
-import com.ihomziak.clientaccountms.dto.AccountRequestDTO;
-import com.ihomziak.clientaccountms.dto.AccountResponseDTO;
-import com.ihomziak.clientaccountms.exception.AccountNotFoundException;
-import com.ihomziak.clientaccountms.exceptionhandler.GlobalExceptionHandler;
-import com.ihomziak.clientaccountms.service.AccountService;
-import com.ihomziak.bankingapp.common.utils.AccountType;
+import static org.mockito.ArgumentMatchers.any;
+import static org.mockito.Mockito.when;
+import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.delete;
+import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.get;
+import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.patch;
+import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.post;
+import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.content;
+import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
+
+import java.time.LocalDateTime;
+import java.util.ArrayList;
+import java.util.Collections;
+import java.util.List;
+
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
@@ -21,16 +24,20 @@ import org.springframework.http.MediaType;
 import org.springframework.test.web.servlet.MockMvc;
 import org.springframework.test.web.servlet.setup.MockMvcBuilders;
 
-import java.util.ArrayList;
-import java.util.Collections;
-import java.util.List;
+import com.fasterxml.jackson.databind.ObjectMapper;
+import com.fasterxml.jackson.databind.SerializationFeature;
+import com.fasterxml.jackson.datatype.jsr310.JavaTimeModule;
+import com.ihomziak.bankingapp.common.utils.AccountType;
+import com.ihomziak.clientaccountms.dto.AccountHolderDTO;
+import com.ihomziak.clientaccountms.dto.AccountInfoDTO;
+import com.ihomziak.clientaccountms.dto.AccountRequestDTO;
+import com.ihomziak.clientaccountms.dto.AccountResponseDTO;
+import com.ihomziak.clientaccountms.exception.AccountNotFoundException;
+import com.ihomziak.clientaccountms.exceptionhandler.GlobalExceptionHandler;
+import com.ihomziak.clientaccountms.service.AccountService;
 
-import static org.mockito.ArgumentMatchers.any;
-import static org.mockito.Mockito.when;
-import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.*;
-import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.content;
-import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
-
+import net.datafaker.Faker;
+// Faker
 @ExtendWith(MockitoExtension.class)
 public class AccountControllerTest {
 
@@ -47,6 +54,7 @@ public class AccountControllerTest {
     private AccountResponseDTO accountResponseDTO;
     private AccountInfoDTO accountInfoDTO;
     private String clientUuid;
+    private Faker faker;
 
     @BeforeEach
     public void setUp() {
@@ -58,28 +66,29 @@ public class AccountControllerTest {
         objectMapper.registerModule(new JavaTimeModule());
         objectMapper.disable(SerializationFeature.WRITE_DATES_AS_TIMESTAMPS);
 
-        clientUuid = "206625ce-3ee7-4174-8f92-4bdc41c18274";
-        String accountNumber = "165445000023211234";
+        faker = new Faker();
+        clientUuid = faker.internet().uuid();
+        String accountNumber = faker.finance().iban();
 
         accountInfoDTO = new AccountInfoDTO();
         accountInfoDTO.setAccountNumber(accountNumber);
         accountInfoDTO.setAccountType(AccountType.CHECKING);
-        accountInfoDTO.setBalance(1000);
+        accountInfoDTO.setBalance(faker.number().numberBetween(1, 1000));
         accountInfoDTO.setUUID(clientUuid);
 
         accountRequestDTO = new AccountRequestDTO();
         accountRequestDTO.setAccountNumber(accountNumber);
         accountRequestDTO.setAccountType(AccountType.CHECKING);
-        accountRequestDTO.setBalance(1000);
+        accountRequestDTO.setBalance(faker.number().numberBetween(1, 1000));
         accountRequestDTO.setClientUUID(clientUuid);
 
         AccountHolderDTO accountHolder = new AccountHolderDTO();
-        accountHolder.setFirstName("John");
-        accountHolder.setLastName("Doe");
+        accountHolder.setFirstName(faker.name().firstName());
+        accountHolder.setLastName(faker.name().lastName());
         accountHolder.setUUID(clientUuid);
 
         accountResponseDTO = new AccountResponseDTO();
-        accountResponseDTO.setAccountId(1);
+        accountResponseDTO.setAccountId(faker.number().numberBetween(1, 1000));
         accountResponseDTO.setAccountHolderDTO(accountHolder);
         accountResponseDTO.setAccountNumber(accountRequestDTO.getAccountNumber());
         accountResponseDTO.setAccountType(accountRequestDTO.getAccountType());
@@ -101,7 +110,7 @@ public class AccountControllerTest {
 
     @Test
     public void getAccount_ShouldReturnNotFound_WhenAccountDoesNotExist() throws Exception {
-        String uuid = "non-existent-uuid";
+        String uuid = faker.finance().iban();
 
         when(accountService.findAccountByUuid(uuid)).thenThrow(new AccountNotFoundException("Account not exist. UUID: " + uuid));
 
