@@ -13,5 +13,4 @@ public class ClientAccountMs {
 	public static void main(String[] args) {
 		SpringApplication.run(ClientAccountMs.class, args);
 	}
-
 }

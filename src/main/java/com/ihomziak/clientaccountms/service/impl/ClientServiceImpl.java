@@ -11,11 +11,18 @@ import com.ihomziak.clientaccountms.exception.ClientAlreadyExistException;
 import com.ihomziak.clientaccountms.exception.ClientNotFoundException;
 import com.ihomziak.clientaccountms.mapper.impl.MapStructMapperImpl;
 import com.ihomziak.clientaccountms.service.ClientService;
+import com.ihomziak.clientaccountms.util.UserSpecifications;
+import org.modelmapper.ModelMapper;
+import org.modelmapper.convention.MatchingStrategies;
 import com.ihomziak.clientaccountms.util.SanitizerUtils;
 
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.data.jpa.domain.Specification;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
+import org.springframework.data.domain.Pageable;
+import org.springframework.data.domain.PageRequest;
+import org.springframework.data.domain.Sort;
 
 import java.time.LocalDateTime;
 import java.util.*;
@@ -129,5 +136,33 @@ public class ClientServiceImpl implements ClientService {
             throw new ClientNotFoundException(String.format("Client %s not found. Firstname: %s, Lastname: $s", firstName, lastName));
         }
         return this.mapper.clientToClientResponseDto(theClient.get());
+    }
+
+    @Override
+    public List<ClientsInfoDTO> findUsers(String order, String firstName, String lastName, String email, Integer page, Integer size) {
+        Pageable pageable = PageRequest.of(page, size, getSort(order));
+
+        Specification<Client> spec = Specification.where(
+                UserSpecifications.hasFirstName(firstName)
+                        .and(UserSpecifications.hasLastName(lastName))
+                        .and(UserSpecifications.hasEmail(email))
+        );
+
+        ModelMapper modelMapper = new ModelMapper();
+        modelMapper.getConfiguration().setMatchingStrategy(MatchingStrategies.STRICT);
+
+        return clientRepository.findAll(spec, pageable)
+                .stream()
+                .map(client -> modelMapper.map(client, ClientsInfoDTO.class))
+                .toList();
+    }
+
+
+    private Sort getSort(String order) {
+        if ("desc".equalsIgnoreCase(order)) {
+            return Sort.by(Sort.Direction.DESC, "firstName");
+        } else {
+            return Sort.by(Sort.Direction.ASC, "firstName");
+        }
     }
 }

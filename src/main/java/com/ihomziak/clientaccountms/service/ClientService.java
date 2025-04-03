@@ -19,4 +19,6 @@ public interface ClientService {
     ClientResponseDTO findClientByUUID(String uuid);
 
     ClientResponseDTO findClientByName(String firstName, String lastName);
+
+    List<ClientsInfoDTO> findUsers(String order, String firstName, String lastName, String email, Integer page, Integer size);
 }

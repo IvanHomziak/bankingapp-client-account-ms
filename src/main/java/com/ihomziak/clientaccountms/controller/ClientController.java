@@ -5,7 +5,6 @@ import com.ihomziak.clientaccountms.service.ClientService;
 import com.ihomziak.clientaccountms.dto.ClientRequestDTO;
 import com.ihomziak.clientaccountms.dto.ClientsInfoDTO;
 import jakarta.validation.Valid;
-import jakarta.ws.rs.QueryParam;
 
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
@@ -15,7 +14,7 @@ import org.springframework.web.bind.annotation.*;
 import java.util.List;
 
 @RestController
-@RequestMapping("/api")
+@RequestMapping("/api/v1")
 public class ClientController {
 
     private final ClientService clientService;
@@ -37,8 +36,27 @@ public class ClientController {
     }
 
     @GetMapping("/clients")
-    public ResponseEntity<List<ClientsInfoDTO>> getClients() {
-        return ResponseEntity.status(HttpStatus.FOUND).body(this.clientService.findAll());
+    public ResponseEntity<List<ClientsInfoDTO>> getClients(
+            @RequestParam(value = "order", required = false, defaultValue = "asc") String order,
+            @RequestParam(value = "firstName", required = false) String firstName,
+            @RequestParam(value = "lastName", required = false) String lastName,
+            @RequestParam(value = "email", required = false) String email,
+            @RequestParam(value = "page", required = false) String pageStr,
+            @RequestParam(value = "size", required = false) String sizeStr
+    ) {
+
+        int page = (pageStr == null || pageStr.isBlank()) ? 0 : Integer.parseInt(pageStr);
+        int size = (sizeStr == null || sizeStr.isBlank()) ? 10 : Integer.parseInt(sizeStr);
+
+        boolean hasFilters = (firstName != null && !firstName.isBlank())
+                || (lastName != null && !lastName.isBlank())
+                || (email != null && !email.isBlank());
+
+        List<ClientsInfoDTO> result = hasFilters
+                ? clientService.findUsers(order, firstName, lastName, email, page, size)
+                : clientService.findAll();
+
+        return ResponseEntity.status(HttpStatus.OK).body(result);
     }
 
     @DeleteMapping("/clients/{uuid}")
@@ -49,13 +67,5 @@ public class ClientController {
     @PatchMapping("/clients/update")
     public ResponseEntity<ClientResponseDTO> updateClient(@RequestBody @Valid ClientRequestDTO clientRequestDTO) {
         return ResponseEntity.status(HttpStatus.ACCEPTED).body(this.clientService.updateClient(clientRequestDTO));
-    }
-
-    @GetMapping("/clients/search")
-    public ResponseEntity<ClientResponseDTO> searchClient(
-        @QueryParam("firstName") String firstName,
-        @QueryParam("lastName") String lastName
-        ) {
-        return ResponseEntity.status(HttpStatus.FOUND).body(this.clientService.findClientByName(firstName,lastName));
     }
 }
