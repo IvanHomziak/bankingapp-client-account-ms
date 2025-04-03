@@ -15,6 +15,8 @@ import com.ihomziak.clientaccountms.service.ClientService;
 import com.ihomziak.clientaccountms.util.UserSpecifications;
 import org.modelmapper.ModelMapper;
 import org.modelmapper.convention.MatchingStrategies;
+import com.ihomziak.clientaccountms.util.SanitizerUtils;
+
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.jpa.domain.Specification;
 import org.springframework.stereotype.Service;
@@ -55,6 +57,10 @@ public class ClientServiceImpl implements ClientService {
     @Override
     @Transactional
     public ClientResponseDTO createClient(ClientRequestDTO clientRequestDTO) {
+
+        // Sanitizes data using extra libraries
+        clientRequestDTO = SanitizerUtils.sanitize(clientRequestDTO);
+
         if (this.clientRepository.findClientByTaxNumber(clientRequestDTO.getTaxNumber()).isPresent()) {
             throw new ClientAlreadyExistException("Client already exist");
         }

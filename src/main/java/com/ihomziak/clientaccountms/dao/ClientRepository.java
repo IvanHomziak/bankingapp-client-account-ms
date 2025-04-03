@@ -15,6 +15,7 @@ import java.util.Optional;
 @Repository
 public interface ClientRepository extends JpaRepository<Client, Long>, JpaSpecificationExecutor<Client> {
 
+    @Query("SELECT c FROM Client c WHERE c.taxNumber = :taxNumber")
     Optional<Client> findClientByTaxNumber(String taxNumber);
 
     Optional<Client> findClientByUUID(@NotNull String uuid);
