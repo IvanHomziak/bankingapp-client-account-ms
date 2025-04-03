@@ -5,6 +5,7 @@ import com.ihomziak.clientaccountms.dao.ClientRepository;
 import com.ihomziak.clientaccountms.dto.ClientRequestDTO;
 import com.ihomziak.clientaccountms.dto.ClientResponseDTO;
 import com.ihomziak.clientaccountms.dto.ClientsInfoDTO;
+import com.ihomziak.clientaccountms.dto.LastNameCountDTO;
 import com.ihomziak.clientaccountms.entity.Account;
 import com.ihomziak.clientaccountms.entity.Client;
 import com.ihomziak.clientaccountms.exception.ClientAlreadyExistException;
@@ -30,13 +31,15 @@ public class ClientServiceImpl implements ClientService {
 
     private final ClientRepository clientRepository;
     private final MapStructMapperImpl mapper;
-
+    private final ModelMapper modelMapper;
 
     @Autowired
     public ClientServiceImpl(ClientRepository clientRepository,
                              MapStructMapperImpl mapper) {
         this.clientRepository = clientRepository;
         this.mapper = mapper;
+        modelMapper = new ModelMapper();
+        modelMapper.getConfiguration().setMatchingStrategy(MatchingStrategies.STRICT);
     }
 
     @Override
@@ -142,14 +145,19 @@ public class ClientServiceImpl implements ClientService {
                         .and(UserSpecifications.hasEmail(email))
         );
 
-        ModelMapper modelMapper = new ModelMapper();
-        modelMapper.getConfiguration().setMatchingStrategy(MatchingStrategies.STRICT);
-
         return clientRepository.findAll(spec, pageable)
                 .stream()
                 .map(client -> modelMapper.map(client, ClientsInfoDTO.class))
                 .toList();
     }
+
+    @Override
+    public LastNameCountDTO countClientsByLastName(String lastName, String order) {
+        return "DESC".equalsIgnoreCase(order)
+                ? clientRepository.countClientsByLastNameOrderDesc(lastName)
+                : clientRepository.countClientsByLastNameOrderAsc(lastName);
+    }
+
 
 
     private Sort getSort(String order) {
