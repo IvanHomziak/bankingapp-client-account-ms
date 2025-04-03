@@ -37,7 +37,7 @@ public class Client {
     @NotNull
     private String taxNumber;
 
-    @Column(name = "email")
+    @Column(name = "email", unique = true)
     @NotNull
     private String email;
 

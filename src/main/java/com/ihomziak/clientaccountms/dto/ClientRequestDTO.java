@@ -1,5 +1,7 @@
 package com.ihomziak.clientaccountms.dto;
 
+import jakarta.validation.constraints.Email;
+import jakarta.validation.constraints.NotBlank;
 import lombok.Setter;
 import lombok.Getter;
 
@@ -7,12 +9,14 @@ import java.util.Objects;
 
 @Setter
 @Getter
+@NotBlank
 public class ClientRequestDTO {
 
     private String firstName;
     private String lastName;
     private String dateOfBirth;
     private String taxNumber;
+    @Email
     private String email;
     private String phoneNumber;
     private String address;

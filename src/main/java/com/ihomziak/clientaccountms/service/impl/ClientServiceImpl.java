@@ -11,6 +11,8 @@ import com.ihomziak.clientaccountms.exception.ClientAlreadyExistException;
 import com.ihomziak.clientaccountms.exception.ClientNotFoundException;
 import com.ihomziak.clientaccountms.mapper.impl.MapStructMapperImpl;
 import com.ihomziak.clientaccountms.service.ClientService;
+import com.ihomziak.clientaccountms.util.SanitizerUtils;
+
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
@@ -45,6 +47,10 @@ public class ClientServiceImpl implements ClientService {
     @Override
     @Transactional
     public ClientResponseDTO createClient(ClientRequestDTO clientRequestDTO) {
+
+        // Sanitizes data using extra libraries
+        clientRequestDTO = SanitizerUtils.sanitize(clientRequestDTO);
+
         if (this.clientRepository.findClientByTaxNumber(clientRequestDTO.getTaxNumber()).isPresent()) {
             throw new ClientAlreadyExistException("Client already exist");
         }
