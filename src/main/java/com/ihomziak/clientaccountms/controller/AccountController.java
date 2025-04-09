@@ -13,7 +13,7 @@ import org.springframework.web.bind.annotation.*;
 import java.util.List;
 
 @RestController
-@RequestMapping("/api")
+@RequestMapping("/api/V1/account")
 public class AccountController {
 
     private final AccountService accountService;
@@ -23,32 +23,32 @@ public class AccountController {
         this.accountService = accountService;
     }
 
-    @GetMapping("/account/{uuid}")
+    @GetMapping("/{uuid}")
     public ResponseEntity<AccountInfoDTO> getAccount(@PathVariable String uuid) {
         return ResponseEntity.status(HttpStatus.FOUND).body(this.accountService.findAccountByUuid(uuid));
     }
 
-    @GetMapping("/account/list/{uuid}")
+    @GetMapping("/list/{uuid}")
     public ResponseEntity<List<AccountResponseDTO>> getClientAccounts(@PathVariable String uuid) {
         return ResponseEntity.status(HttpStatus.FOUND).body(this.accountService.findAllAccountsByClientUUID(uuid));
     }
 
-    @PostMapping("/account")
+    @PostMapping
     public ResponseEntity<AccountResponseDTO> createCheckingAccount(@RequestBody @Valid AccountRequestDTO accountRequestDTO) {
         return ResponseEntity.status(HttpStatus.CREATED).body(this.accountService.createCheckingAccount(accountRequestDTO));
     }
 
-    @DeleteMapping("/account/{uuid}")
+    @DeleteMapping("/{uuid}")
     public ResponseEntity<AccountInfoDTO> deleteAccount(@PathVariable String uuid) {
         return ResponseEntity.status(HttpStatus.ACCEPTED).body(this.accountService.deleteAccount(uuid));
     }
 
-    @PatchMapping("/account")
+    @PatchMapping
     public ResponseEntity<AccountResponseDTO> updateAccount(@RequestBody @Valid AccountRequestDTO accountRequestDTO) {
         return ResponseEntity.status(HttpStatus.ACCEPTED).body(this.accountService.updateAccount(accountRequestDTO));
     }
 
-    @GetMapping("/account")
+    @GetMapping
     public ResponseEntity<List<AccountInfoDTO>> getAccounts() {
         return ResponseEntity.status(HttpStatus.FOUND).body(this.accountService.findAllAccounts());
     }

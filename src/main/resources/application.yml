@@ -1,3 +1,12 @@
 spring:
   profiles:
     active: prod
+
+# swagger-ui custom path
+springdoc:
+  swagger-ui:
+    path: /swagger-ui.html
+  api-docs:
+    path: /v3/api-docs
+    enabled: true
+  packages-to-scan: com.ihomziak
