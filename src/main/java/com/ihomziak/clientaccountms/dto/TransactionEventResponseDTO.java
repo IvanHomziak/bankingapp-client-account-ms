@@ -1,38 +1,18 @@
 package com.ihomziak.clientaccountms.dto;
 
 import com.ihomziak.bankingapp.common.utils.TransactionStatus;
-import lombok.*;
 
-import java.util.Objects;
+import lombok.AllArgsConstructor;
+import lombok.Builder;
+import lombok.Data;
+import lombok.NoArgsConstructor;
 
-@Getter
-@Setter
-@NoArgsConstructor
-@AllArgsConstructor
+@Data
 @Builder
+@AllArgsConstructor
+@NoArgsConstructor
 public class TransactionEventResponseDTO {
     private String transactionUuid;
     private TransactionStatus transactionStatus;
     private String statusMessage;
-
-    @Override
-    public boolean equals(Object o) {
-        if (o == null || getClass() != o.getClass()) return false;
-        TransactionEventResponseDTO that = (TransactionEventResponseDTO) o;
-        return Objects.equals(transactionUuid, that.transactionUuid) && transactionStatus == that.transactionStatus && Objects.equals(statusMessage, that.statusMessage);
-    }
-
-    @Override
-    public int hashCode() {
-        return Objects.hash(transactionUuid, transactionStatus, statusMessage);
-    }
-
-    @Override
-    public String toString() {
-        return "TransactionEventResponseDTO{" +
-                "transactionUuid='" + transactionUuid + '\'' +
-                ", transactionStatus=" + transactionStatus +
-                ", statusMessage='" + statusMessage + '\'' +
-                '}';
-    }
 }

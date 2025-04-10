@@ -1,16 +1,17 @@
 package com.ihomziak.clientaccountms.dao;
 
-import com.ihomziak.clientaccountms.dto.LastNameCountDTO;
-import com.ihomziak.clientaccountms.entity.Client;
-import jakarta.validation.constraints.NotNull;
+import java.util.Optional;
+
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.data.jpa.repository.JpaSpecificationExecutor;
 import org.springframework.data.jpa.repository.Query;
 import org.springframework.data.repository.query.Param;
 import org.springframework.stereotype.Repository;
 
-import java.util.List;
-import java.util.Optional;
+import com.ihomziak.clientaccountms.dto.LastNameCountDTO;
+import com.ihomziak.clientaccountms.entity.Client;
+
+import jakarta.validation.constraints.NotNull;
 
 @Repository
 public interface ClientRepository extends JpaRepository<Client, Long>, JpaSpecificationExecutor<Client> {

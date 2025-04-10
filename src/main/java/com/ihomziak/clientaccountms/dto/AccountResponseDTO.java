@@ -1,17 +1,14 @@
 package com.ihomziak.clientaccountms.dto;
 
+import java.math.BigDecimal;
+import java.time.LocalDateTime;
+
 import com.ihomziak.bankingapp.common.utils.AccountType;
 
 import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.Data;
 import lombok.NoArgsConstructor;
-import lombok.Setter;
-import lombok.Getter;
-
-import java.math.BigDecimal;
-import java.time.LocalDateTime;
-import java.util.Objects;
 
 @Data
 @Builder

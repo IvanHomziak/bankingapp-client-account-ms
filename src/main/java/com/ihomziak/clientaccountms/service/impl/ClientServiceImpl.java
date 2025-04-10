@@ -164,8 +164,6 @@ public class ClientServiceImpl implements ClientService {
                 : clientRepository.countClientsByLastNameOrderAsc(lastName);
     }
 
-
-
     private Sort getSort(String order) {
         if ("desc".equalsIgnoreCase(order)) {
             return Sort.by(Sort.Direction.DESC, "firstName");
