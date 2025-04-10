@@ -5,6 +5,8 @@ import org.junit.jupiter.api.Test;
 
 import static org.junit.jupiter.api.Assertions.*;
 
+import java.math.BigDecimal;
+
 class AccountRequestDTOTest {
 
     @Test
@@ -13,7 +15,7 @@ class AccountRequestDTOTest {
         AccountRequestDTO accountRequestDTO = new AccountRequestDTO();
         String accountNumber = "123456789012345678";
         AccountType accountType = AccountType.CHECKING;
-        double balance = 1000.50;
+        BigDecimal balance = BigDecimal.valueOf(1000.50);
         String clientUUID = "987e6543-e21b-12d3-a456-426614174000";
 
         // Act
@@ -48,7 +50,7 @@ class AccountRequestDTOTest {
         AccountRequestDTO accountRequestDTO = new AccountRequestDTO();
         accountRequestDTO.setAccountNumber("123456789012345678");
         accountRequestDTO.setAccountType(AccountType.SAVINGS);
-        accountRequestDTO.setBalance(2500.75);
+        accountRequestDTO.setBalance(BigDecimal.valueOf(2500.75));
         accountRequestDTO.setClientUUID("123e4567-e89b-12d3-a456-426614174000");
 
         // Act
@@ -68,19 +70,19 @@ class AccountRequestDTOTest {
         AccountRequestDTO dto1 = new AccountRequestDTO();
         dto1.setAccountNumber("123456789012345678");
         dto1.setAccountType(AccountType.CHECKING);
-        dto1.setBalance(1000.0);
+        dto1.setBalance(BigDecimal.valueOf(1000.0));
         dto1.setClientUUID("123e4567-e89b-12d3-a456-426614174000");
 
         AccountRequestDTO dto2 = new AccountRequestDTO();
         dto2.setAccountNumber("123456789012345678");
         dto2.setAccountType(AccountType.CHECKING);
-        dto2.setBalance(1000.0);
+        dto2.setBalance(BigDecimal.valueOf(1000.0));
         dto2.setClientUUID("123e4567-e89b-12d3-a456-426614174000");
 
         AccountRequestDTO dto3 = new AccountRequestDTO();
         dto3.setAccountNumber("987654321098765432");
         dto3.setAccountType(AccountType.SAVINGS);
-        dto3.setBalance(2000.0);
+        dto3.setBalance(BigDecimal.valueOf(2000.0));
         dto3.setClientUUID("987e6543-e21b-12d3-a456-426614174000");
 
         // Act & Assert
@@ -96,7 +98,7 @@ class AccountRequestDTOTest {
         AccountRequestDTO dto = new AccountRequestDTO();
         dto.setAccountNumber("123456789012345678");
         dto.setAccountType(AccountType.CHECKING);
-        dto.setBalance(1000.0);
+        dto.setBalance(BigDecimal.valueOf(1000.0));
         dto.setClientUUID("123e4567-e89b-12d3-a456-426614174000");
 
         // Act & Assert

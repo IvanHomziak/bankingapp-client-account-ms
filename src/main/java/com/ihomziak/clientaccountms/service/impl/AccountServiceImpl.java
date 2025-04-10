@@ -169,13 +169,13 @@ public class AccountServiceImpl implements AccountService {
         Account senderAccount = sender.get();
         Account receiverAccount = receiver.get();
 
-        if (senderAccount.getBalance() < transactionEventRequestDTO.getAmount()) {
+        if (senderAccount.getBalance().compareTo(transactionEventRequestDTO.getAmount()) < 0) {
             this.transactionEventProducer.sendTransactionResponse(transactionEventRequestDTO, "Insufficient funds", TransactionStatus.FAILED);
             return;
         }
 
-        senderAccount.setBalance(senderAccount.getBalance() - transactionEventRequestDTO.getAmount());
-        receiverAccount.setBalance(receiverAccount.getBalance() + transactionEventRequestDTO.getAmount());
+        senderAccount.setBalance(senderAccount.getBalance().subtract(transactionEventRequestDTO.getAmount()));
+        receiverAccount.setBalance(receiverAccount.getBalance().add(transactionEventRequestDTO.getAmount()));
 
         // написати сторед процедуру для цього методу. почитати про сторед процедури та вьюшки. до бази потрібно звертатись не 4 рази а один
         accountRepository.save(senderAccount);

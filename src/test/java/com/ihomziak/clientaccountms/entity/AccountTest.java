@@ -4,6 +4,7 @@ import com.ihomziak.bankingapp.common.utils.AccountType;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 
+import java.math.BigDecimal;
 import java.time.LocalDateTime;
 
 import static org.junit.jupiter.api.Assertions.*;
@@ -25,7 +26,7 @@ class AccountTest {
         account.setAccountId(100L);
         account.setAccountNumber("123456789012345678");
         account.setAccountType(AccountType.CHECKING);
-        account.setBalance(1500.75);
+        account.setBalance(BigDecimal.valueOf(1500.75));
         account.setCreatedAt(LocalDateTime.of(2024, 11, 21, 10, 0));
         account.setLastUpdate(LocalDateTime.of(2024, 11, 22, 12, 30));
         account.setUUID("987e6543-e21b-12d3-a456-426614174001");

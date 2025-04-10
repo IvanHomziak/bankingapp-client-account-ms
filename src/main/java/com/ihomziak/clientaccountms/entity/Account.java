@@ -8,6 +8,7 @@ import lombok.Setter;
 import org.springframework.data.annotation.CreatedDate;
 import org.springframework.data.annotation.LastModifiedDate;
 
+import java.math.BigDecimal;
 import java.time.LocalDateTime;
 
 @Entity
@@ -29,7 +30,7 @@ public class Account {
     private AccountType accountType;
 
     @Column(name = "balance")
-    private double balance;
+    private BigDecimal balance;
 
     @CreatedDate
     @Column(name = "created_at", updatable = false)

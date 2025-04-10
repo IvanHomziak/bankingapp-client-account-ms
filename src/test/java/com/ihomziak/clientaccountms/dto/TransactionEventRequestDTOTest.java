@@ -1,9 +1,13 @@
 package com.ihomziak.clientaccountms.dto;
 
-import com.ihomziak.bankingapp.common.utils.TransactionStatus;
+import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertNotEquals;
+
+import java.math.BigDecimal;
+
 import org.junit.jupiter.api.Test;
 
-import static org.junit.jupiter.api.Assertions.*;
+import com.ihomziak.bankingapp.common.utils.TransactionStatus;
 
 class TransactionEventRequestDTOTest {
 
@@ -14,7 +18,7 @@ class TransactionEventRequestDTOTest {
         String transactionUuid = "123e4567-e89b-12d3-a456-426614174001";
         String senderUuid = "sender-uuid-123";
         String receiverUuid = "receiver-uuid-456";
-        Double amount = 1000.50;
+        BigDecimal amount = BigDecimal.valueOf(1000.50);
         TransactionStatus transactionStatus = TransactionStatus.COMPLETED;
 
         // Act
@@ -39,21 +43,21 @@ class TransactionEventRequestDTOTest {
                 "123e4567-e89b-12d3-a456-426614174001",
                 "sender-uuid-123",
                 "receiver-uuid-456",
-                1000.50,
+                BigDecimal.valueOf(1000.50),
                 TransactionStatus.COMPLETED
         );
         TransactionEventRequestDTO dto2 = new TransactionEventRequestDTO(
                 "123e4567-e89b-12d3-a456-426614174001",
                 "sender-uuid-123",
                 "receiver-uuid-456",
-                1000.50,
+                BigDecimal.valueOf(1000.50),
                 TransactionStatus.COMPLETED
         );
         TransactionEventRequestDTO dto3 = new TransactionEventRequestDTO(
                 "different-uuid",
                 "sender-uuid-789",
                 "receiver-uuid-999",
-                500.0,
+                BigDecimal.valueOf(1000.50),
                 TransactionStatus.FAILED
         );
 
@@ -71,7 +75,7 @@ class TransactionEventRequestDTOTest {
                 "123e4567-e89b-12d3-a456-426614174001",
                 "sender-uuid-123",
                 "receiver-uuid-456",
-                1000.50,
+                BigDecimal.valueOf(1000.50),
                 TransactionStatus.COMPLETED
         );
 

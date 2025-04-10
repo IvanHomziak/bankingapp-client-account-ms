@@ -25,6 +25,7 @@ import org.mockito.InjectMocks;
 import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
 
+import java.math.BigDecimal;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Optional;
@@ -65,7 +66,7 @@ class AccountServiceImplTest {
         accountRequestDTO.setClientUUID("client-uuid");
         accountRequestDTO.setAccountNumber("123456789");
         accountRequestDTO.setAccountType(AccountType.CHECKING);
-        accountRequestDTO.setBalance(1000.0);
+        accountRequestDTO.setBalance(BigDecimal.valueOf(1000.0));
 
         accountResponseDTO = new AccountResponseDTO();
         accountResponseDTO.setUUID("client-uuid");
@@ -161,21 +162,27 @@ class AccountServiceImplTest {
         ConsumerRecord<Integer, String> consumerRecord = mock(ConsumerRecord.class);
         when(consumerRecord.value()).thenReturn("{\"senderUuid\":\"sender-uuid\",\"receiverUuid\":\"receiver-uuid\",\"amount\":500.0}");
 
+        BigDecimal amount = BigDecimal.valueOf(500.0);
         // Mock the deserialized DTO
         TransactionEventRequestDTO transactionEventRequestDTO = new TransactionEventRequestDTO();
         transactionEventRequestDTO.setSenderUuid("sender-uuid");
         transactionEventRequestDTO.setReceiverUuid("receiver-uuid");
-        transactionEventRequestDTO.setAmount(500.0);
+        transactionEventRequestDTO.setAmount(amount);
         when(objectMapper.readValue(anyString(), eq(TransactionEventRequestDTO.class))).thenReturn(transactionEventRequestDTO);
 
+        BigDecimal senderBalance = BigDecimal.valueOf(500.0);
+        BigDecimal receiverBalance = BigDecimal.valueOf(200.0);
+
+        BigDecimal senderBalanceAfterTransaction = senderBalance.subtract(amount);
+        BigDecimal receiverBalanceAfterTransaction = receiverBalance.add(amount);
         // Mock the accounts
         Account senderAccount = new Account();
         senderAccount.setUUID("sender-uuid");
-        senderAccount.setBalance(1000.0);
+        senderAccount.setBalance(senderBalance);
 
         Account receiverAccount = new Account();
         receiverAccount.setUUID("receiver-uuid");
-        receiverAccount.setBalance(200.0);
+        receiverAccount.setBalance(receiverBalance);
 
         when(accountRepository.findAccountByUUID("sender-uuid")).thenReturn(Optional.of(senderAccount));
         when(accountRepository.findAccountByUUID("receiver-uuid")).thenReturn(Optional.of(receiverAccount));
@@ -192,8 +199,8 @@ class AccountServiceImplTest {
         );
 
         // Assert updated balances
-        assertEquals(500.0, senderAccount.getBalance());
-        assertEquals(700.0, receiverAccount.getBalance());
+        assertEquals(senderBalanceAfterTransaction, senderAccount.getBalance());
+        assertEquals(receiverBalanceAfterTransaction, receiverAccount.getBalance());
     }
 
 
@@ -207,18 +214,18 @@ class AccountServiceImplTest {
         TransactionEventRequestDTO dto = new TransactionEventRequestDTO();
         dto.setSenderUuid("sender-uuid");
         dto.setReceiverUuid("receiver-uuid");
-        dto.setAmount(2000.0);
+        dto.setAmount(BigDecimal.valueOf(2000.0));
 
         when(objectMapper.readValue(anyString(), eq(TransactionEventRequestDTO.class))).thenReturn(dto);
 
         // Mock sender account with insufficient funds
         Account senderAccount = new Account();
         senderAccount.setUUID("sender-uuid");
-        senderAccount.setBalance(1000.0);
+        senderAccount.setBalance(BigDecimal.valueOf(1000.0));
 
         Account receiverAccount = new Account();
         receiverAccount.setUUID("receiver-uuid");
-        receiverAccount.setBalance(200.0);
+        receiverAccount.setBalance(BigDecimal.valueOf(200.0));
 
         when(accountRepository.findAccountByUUID("sender-uuid")).thenReturn(Optional.of(senderAccount));
         when(accountRepository.findAccountByUUID("receiver-uuid")).thenReturn(Optional.of(receiverAccount));

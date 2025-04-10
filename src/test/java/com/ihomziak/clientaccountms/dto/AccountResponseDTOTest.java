@@ -3,6 +3,7 @@ package com.ihomziak.clientaccountms.dto;
 import com.ihomziak.bankingapp.common.utils.AccountType;
 import org.junit.jupiter.api.Test;
 
+import java.math.BigDecimal;
 import java.time.LocalDateTime;
 
 import static org.junit.jupiter.api.Assertions.*;
@@ -21,7 +22,7 @@ class AccountResponseDTOTest {
 
         String accountNumber = "123456789012345678";
         AccountType accountType = AccountType.CHECKING;
-        double balance = 1000.50;
+        BigDecimal balance = BigDecimal.valueOf(1000.50);
         String UUID = "987e6543-e21b-12d3-a456-426614174001";
         LocalDateTime createdAt = LocalDateTime.now();
         LocalDateTime lastUpdated = LocalDateTime.now();
@@ -61,7 +62,7 @@ class AccountResponseDTOTest {
         accountResponseDTO.setAccountHolderDTO(accountHolderDTO);
         accountResponseDTO.setAccountNumber("123456789012345678");
         accountResponseDTO.setAccountType(AccountType.SAVINGS);
-        accountResponseDTO.setBalance(2500.75);
+        accountResponseDTO.setBalance(BigDecimal.valueOf(2500.75));
         accountResponseDTO.setUUID("987e6543-e21b-12d3-a456-426614174001");
         accountResponseDTO.setCreatedAt(LocalDateTime.of(2024, 11, 21, 10, 0));
         accountResponseDTO.setLastUpdated(LocalDateTime.of(2024, 11, 22, 12, 30));
@@ -84,11 +85,12 @@ class AccountResponseDTOTest {
     @Test
     void testEqualsAndHashCode() {
         // Arrange
+        BigDecimal balance = BigDecimal.valueOf(1000.0);
         AccountResponseDTO dto1 = new AccountResponseDTO();
         dto1.setAccountId(1L);
         dto1.setAccountNumber("123456789012345678");
         dto1.setAccountType(AccountType.CHECKING);
-        dto1.setBalance(1000.0);
+        dto1.setBalance(balance);
         dto1.setUUID("987e6543-e21b-12d3-a456-426614174001");
         dto1.setCreatedAt(LocalDateTime.of(2024, 11, 21, 10, 0));
         dto1.setLastUpdated(LocalDateTime.of(2024, 11, 22, 12, 30));
@@ -97,7 +99,7 @@ class AccountResponseDTOTest {
         dto2.setAccountId(1L);
         dto2.setAccountNumber("123456789012345678");
         dto2.setAccountType(AccountType.CHECKING);
-        dto2.setBalance(1000.0);
+        dto2.setBalance(balance);
         dto2.setUUID("987e6543-e21b-12d3-a456-426614174001");
         dto2.setCreatedAt(LocalDateTime.of(2024, 11, 21, 10, 0));
         dto2.setLastUpdated(LocalDateTime.of(2024, 11, 22, 12, 30));
@@ -106,7 +108,7 @@ class AccountResponseDTOTest {
         dto3.setAccountId(2L);
         dto3.setAccountNumber("987654321098765432");
         dto3.setAccountType(AccountType.SAVINGS);
-        dto3.setBalance(2000.0);
+        dto3.setBalance(BigDecimal.valueOf(2000.0));
         dto3.setUUID("123e4567-e89b-12d3-a456-426614174000");
         dto3.setCreatedAt(LocalDateTime.of(2024, 11, 20, 9, 0));
         dto3.setLastUpdated(LocalDateTime.of(2024, 11, 21, 11, 0));
@@ -125,7 +127,7 @@ class AccountResponseDTOTest {
         dto.setAccountId(1L);
         dto.setAccountNumber("123456789012345678");
         dto.setAccountType(AccountType.CHECKING);
-        dto.setBalance(1000.0);
+        dto.setBalance(BigDecimal.valueOf(1000.50));
         dto.setUUID("987e6543-e21b-12d3-a456-426614174001");
 
         // Act & Assert

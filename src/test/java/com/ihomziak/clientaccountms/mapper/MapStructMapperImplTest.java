@@ -8,6 +8,7 @@ import com.ihomziak.bankingapp.common.utils.AccountType;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 
+import java.math.BigDecimal;
 import java.time.LocalDateTime;
 import java.util.ArrayList;
 import java.util.List;
@@ -115,7 +116,7 @@ class MapStructMapperImplTest {
         AccountRequestDTO requestDTO = new AccountRequestDTO();
         requestDTO.setAccountNumber("123456789");
         requestDTO.setAccountType(AccountType.CHECKING);
-        requestDTO.setBalance(1000.0);
+        requestDTO.setBalance(BigDecimal.valueOf(1000.0));
         requestDTO.setClientUUID("client-uuid");
 
         Account account = mapper.accountRequestDtoToAccount(requestDTO);
@@ -133,7 +134,7 @@ class MapStructMapperImplTest {
         account.setAccountId(1L);
         account.setAccountNumber("123456789");
         account.setAccountType(AccountType.CHECKING);
-        account.setBalance(1000.0);
+        account.setBalance(BigDecimal.valueOf(1000.0));
         account.setUUID("account-uuid");
 
         Client client = new Client();
@@ -161,7 +162,7 @@ class MapStructMapperImplTest {
         Account account = new Account();
         account.setAccountNumber("123456789");
         account.setAccountType(AccountType.SAVINGS);
-        account.setBalance(500.0);
+        account.setBalance(BigDecimal.valueOf(500.0));
         account.setUUID("account-uuid");
 
         AccountInfoDTO infoDTO = mapper.accountToAccountInfoDto(account);

@@ -5,6 +5,8 @@ import org.junit.jupiter.api.Test;
 
 import static org.junit.jupiter.api.Assertions.*;
 
+import java.math.BigDecimal;
+
 class AccountInfoDTOTest {
 
     @Test
@@ -13,7 +15,7 @@ class AccountInfoDTOTest {
         AccountInfoDTO accountInfoDTO = new AccountInfoDTO();
         String accountNumber = "123456789012345678";
         AccountType accountType = AccountType.CHECKING;
-        double balance = 1500.75;
+        BigDecimal balance = BigDecimal.valueOf(1500.75);
         String uuid = "987e6543-e21b-12d3-a456-426614174000";
 
         // Act
@@ -48,7 +50,7 @@ class AccountInfoDTOTest {
         AccountInfoDTO accountInfoDTO = new AccountInfoDTO();
         accountInfoDTO.setAccountNumber("123456789012345678");
         accountInfoDTO.setAccountType(AccountType.SAVINGS);
-        accountInfoDTO.setBalance(2500.50);
+        accountInfoDTO.setBalance(BigDecimal.valueOf(2500.50));
         accountInfoDTO.setUUID("123e4567-e89b-12d3-a456-426614174000");
 
         // Act
@@ -68,19 +70,19 @@ class AccountInfoDTOTest {
         AccountInfoDTO dto1 = new AccountInfoDTO();
         dto1.setAccountNumber("123456789012345678");
         dto1.setAccountType(AccountType.CHECKING);
-        dto1.setBalance(1000.0);
+        dto1.setBalance(BigDecimal.valueOf(1000.0));
         dto1.setUUID("123e4567-e89b-12d3-a456-426614174000");
 
         AccountInfoDTO dto2 = new AccountInfoDTO();
         dto2.setAccountNumber("123456789012345678");
         dto2.setAccountType(AccountType.CHECKING);
-        dto2.setBalance(1000.0);
+        dto2.setBalance(BigDecimal.valueOf(1000.0));
         dto2.setUUID("123e4567-e89b-12d3-a456-426614174000");
 
         AccountInfoDTO dto3 = new AccountInfoDTO();
         dto3.setAccountNumber("987654321098765432");
         dto3.setAccountType(AccountType.SAVINGS);
-        dto3.setBalance(5000.0);
+        dto3.setBalance(BigDecimal.valueOf(5000.0));
         dto3.setUUID("987e6543-e21b-12d3-a456-426614174000");
 
         // Act & Assert
@@ -96,7 +98,7 @@ class AccountInfoDTOTest {
         AccountInfoDTO dto1 = new AccountInfoDTO();
         dto1.setAccountNumber("123456789012345678");
         dto1.setAccountType(AccountType.CHECKING);
-        dto1.setBalance(1000.0);
+        dto1.setBalance(BigDecimal.valueOf(1000.0));
         dto1.setUUID("123e4567-e89b-12d3-a456-426614174000");
 
         // Act & Assert

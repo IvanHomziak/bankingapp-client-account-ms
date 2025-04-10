@@ -9,7 +9,7 @@ import static org.springframework.test.web.servlet.request.MockMvcRequestBuilder
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.content;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
 
-import java.time.LocalDateTime;
+import java.math.BigDecimal;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
@@ -73,13 +73,13 @@ public class AccountControllerTest {
         accountInfoDTO = new AccountInfoDTO();
         accountInfoDTO.setAccountNumber(accountNumber);
         accountInfoDTO.setAccountType(AccountType.CHECKING);
-        accountInfoDTO.setBalance(faker.number().numberBetween(1, 1000));
+        accountInfoDTO.setBalance(BigDecimal.valueOf(faker.number().numberBetween(1, 1000)));
         accountInfoDTO.setUUID(clientUuid);
 
         accountRequestDTO = new AccountRequestDTO();
         accountRequestDTO.setAccountNumber(accountNumber);
         accountRequestDTO.setAccountType(AccountType.CHECKING);
-        accountRequestDTO.setBalance(faker.number().numberBetween(1, 1000));
+        accountRequestDTO.setBalance(BigDecimal.valueOf(faker.number().numberBetween(1, 1000)));
         accountRequestDTO.setClientUUID(clientUuid);
 
         AccountHolderDTO accountHolder = new AccountHolderDTO();
