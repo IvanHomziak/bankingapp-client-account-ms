@@ -1,6 +1,9 @@
 -- Drop the client table if it exists
 DROP TABLE IF EXISTS client;
 
+-- Drop the account table if it exists
+DROP TABLE IF EXISTS account;
+
 -- Create the client table with a unique constraint on uuid
 CREATE TABLE client
 (
