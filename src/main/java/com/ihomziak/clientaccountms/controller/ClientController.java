@@ -1,5 +1,7 @@
 package com.ihomziak.clientaccountms.controller;
 
+import static com.ihomziak.clientaccountms.util.constants.Endpoints.ClientEndpoints.*;
+
 import com.ihomziak.clientaccountms.dto.ClientResponseDTO;
 import com.ihomziak.clientaccountms.dto.LastNameCountDTO;
 import com.ihomziak.clientaccountms.service.ClientService;
@@ -15,7 +17,7 @@ import org.springframework.web.bind.annotation.*;
 import java.util.List;
 
 @RestController
-@RequestMapping("/api/v1/clients")
+@RequestMapping(API_CLIENT_V1)
 public class ClientController {
 
     private final ClientService clientService;
@@ -26,12 +28,12 @@ public class ClientController {
 
     }
 
-    @PostMapping("/add-client")
+    @PostMapping(ADD_CLIENT)
     public ResponseEntity<ClientResponseDTO> addClient(@RequestBody @Valid ClientRequestDTO clientRequestDTO) {
         return ResponseEntity.status(HttpStatus.CREATED).body(this.clientService.createClient(clientRequestDTO));
     }
 
-    @GetMapping("/{uuid}")
+    @GetMapping(GET_CLIENT)
     public ResponseEntity<ClientResponseDTO> getClient(@PathVariable String uuid) {
         return ResponseEntity.status(HttpStatus.FOUND).body(this.clientService.findClientByUUID(uuid));
     }
@@ -61,17 +63,17 @@ public class ClientController {
     }
 
 
-    @DeleteMapping("/{uuid}")
+    @DeleteMapping(DELETE_CLIENT)
     public ResponseEntity<ClientResponseDTO> deleteClient(@PathVariable String uuid) {
         return ResponseEntity.status(HttpStatus.OK).body(this.clientService.deleteByUUID(uuid));
     }
 
-    @PatchMapping("/update")
+    @PatchMapping(UPDATE_CLIENT)
     public ResponseEntity<ClientResponseDTO> updateClient(@RequestBody @Valid ClientRequestDTO clientRequestDTO) {
         return ResponseEntity.status(HttpStatus.ACCEPTED).body(this.clientService.updateClient(clientRequestDTO));
     }
 
-    @GetMapping("/search")
+    @GetMapping(SEARCH_CLIENT)
     public ResponseEntity<ClientResponseDTO> searchClient(
             @RequestParam("firstName") String firstName,
             @RequestParam("lastName") String lastName
@@ -79,7 +81,7 @@ public class ClientController {
         return ResponseEntity.status(HttpStatus.FOUND).body(this.clientService.findClientByName(firstName, lastName));
     }
 
-    @GetMapping("/count")
+    @GetMapping(COUNT_CLIENTS_BY_LAST_NAME)
     public ResponseEntity<LastNameCountDTO> countClientsByLastName(
             @RequestParam("lastName") String lastName,
             @RequestParam(value = "order", defaultValue = "DESC") String order

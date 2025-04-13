@@ -62,22 +62,4 @@ public class Client {
 
     @OneToMany(mappedBy = "client")
     private List<Account> account;
-
-    @Override
-    public String toString() {
-        return "Client{" +
-                "clientId=" + clientId +
-                ", firstName='" + firstName + '\'' +
-                ", lastName='" + lastName + '\'' +
-                ", dateOfBirth='" + dateOfBirth + '\'' +
-                ", taxNumber='" + taxNumber + '\'' +
-                ", email='" + email + '\'' +
-                ", phoneNumber='" + phoneNumber + '\'' +
-                ", address='" + address + '\'' +
-                ", createdAt=" + createdAt +
-                ", updatedAt=" + updatedAt +
-                ", UUID='" + UUID + '\'' +
-                ", accountIds=" + (account != null ? account.stream().map(Account::getAccountId).toList() : "[]") +
-                '}';
-    }
 }

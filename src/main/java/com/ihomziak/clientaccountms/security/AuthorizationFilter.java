@@ -1,5 +1,7 @@
 package com.ihomziak.clientaccountms.security;
 
+import static com.ihomziak.clientaccountms.util.constants.Endpoints.SwaggerEndpoints.*;
+
 import com.ihomziak.bankingapp.common.api.JwtClaimsParser;
 import jakarta.servlet.FilterChain;
 import jakarta.servlet.ServletException;
@@ -75,11 +77,12 @@ public class AuthorizationFilter extends BasicAuthenticationFilter {
     }
 
     private boolean isPublicEndpoint(String path) {
-        return path.startsWith("/v3/api-docs") ||
-            path.startsWith("/swagger-ui") ||
-            path.startsWith("/swagger-resources") ||
-            path.startsWith("/webjars") ||
-            path.equals("/swagger-ui.html") ||
-            path.equals("/swagger-ui/index.html");
+        return path.startsWith(SWAGGER_UI) ||
+            path.startsWith(SWAGGER_UI_HTML) ||
+            path.startsWith(SWAGGER_UI_INDEX) ||
+            path.startsWith(SWAGGER_API_DOCS_V2) ||
+            path.startsWith(SWAGGER_API_DOCS_V3) ||
+            path.startsWith(SWAGGER_RESOURCES) ||
+            path.startsWith(SWAGGER_WEBJARS);
     }
 }
