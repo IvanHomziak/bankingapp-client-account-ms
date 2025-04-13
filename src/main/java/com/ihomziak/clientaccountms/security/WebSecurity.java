@@ -49,7 +49,7 @@ public class WebSecurity {
                                 SWAGGER_API_DOCS_V3,
                                 SWAGGER_RESOURCES,
                                 SWAGGER_WEBJARS
-                        ).permitAll()
+                        ).authenticated()
                             .requestMatchers(HttpMethod.PUT, API_CLIENT_V1 + ADD_CLIENT).authenticated()
                             .requestMatchers(HttpMethod.GET, API_CLIENT_V1 + GET_CLIENT).authenticated()
                             .requestMatchers(HttpMethod.GET, API_CLIENT_V1).authenticated()
