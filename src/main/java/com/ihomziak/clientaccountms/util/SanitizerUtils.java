@@ -22,6 +22,7 @@ public class SanitizerUtils {
 		sanitized.setTaxNumber(sanitize(dto.getTaxNumber()).toLowerCase());
 		sanitized.setPhoneNumber(sanitize(dto.getPhoneNumber()));
 		sanitized.setAddress(sanitize(dto.getAddress()));
+		sanitized.setDateOfBirth(sanitize(dto.getDateOfBirth()));
 
 		return sanitized;
 	}

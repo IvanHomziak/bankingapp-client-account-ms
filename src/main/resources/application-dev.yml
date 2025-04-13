@@ -118,5 +118,3 @@ authorization:
     header:
       name: Authorization
       prefix: Bearer
-token:
-  secret: dgjorufhrsnjdu438fkdj38fdmcv7dm3ckvhrsnjjuwelueivhe848fhedldh5ndk
