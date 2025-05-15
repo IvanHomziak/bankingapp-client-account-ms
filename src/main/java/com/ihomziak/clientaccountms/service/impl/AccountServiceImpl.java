@@ -1,30 +1,37 @@
 package com.ihomziak.clientaccountms.service.impl;
 
+import java.time.LocalDateTime;
+import java.util.ArrayList;
+import java.util.List;
+import java.util.Optional;
+import java.util.UUID;
+
+import org.apache.kafka.clients.consumer.ConsumerRecord;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
+
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
-import com.ihomziak.clientaccountms.dto.*;
+import com.ihomziak.bankingapp.common.utils.TransactionStatus;
 import com.ihomziak.clientaccountms.dao.AccountRepository;
 import com.ihomziak.clientaccountms.dao.ClientRepository;
-import com.ihomziak.bankingapp.common.utils.TransactionStatus;
-import com.ihomziak.clientaccountms.producer.TransactionEventProducer;
-import com.ihomziak.clientaccountms.service.AccountService;
+import com.ihomziak.clientaccountms.dto.AccountHolderDTO;
+import com.ihomziak.clientaccountms.dto.AccountInfoDTO;
+import com.ihomziak.clientaccountms.dto.AccountRequestDTO;
+import com.ihomziak.clientaccountms.dto.AccountResponseDTO;
+import com.ihomziak.clientaccountms.dto.TransactionEventRequestDTO;
 import com.ihomziak.clientaccountms.entity.Account;
 import com.ihomziak.clientaccountms.entity.Client;
 import com.ihomziak.clientaccountms.exception.AccountNotFoundException;
 import com.ihomziak.clientaccountms.exception.AccountNumberQuantityException;
 import com.ihomziak.clientaccountms.exception.ClientNotFoundException;
 import com.ihomziak.clientaccountms.mapper.MapStructMapper;
+import com.ihomziak.clientaccountms.producer.TransactionEventProducer;
+import com.ihomziak.clientaccountms.service.AccountService;
 import com.ihomziak.clientaccountms.util.AccountNumberGenerator;
-import lombok.extern.slf4j.Slf4j;
-import org.apache.kafka.clients.consumer.ConsumerRecord;
-import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.stereotype.Service;
-import org.springframework.transaction.annotation.Transactional;
 
-import java.time.LocalDateTime;
-import java.util.ArrayList;
-import java.util.List;
-import java.util.Optional;
+import lombok.extern.slf4j.Slf4j;
 
 @Slf4j
 @Service
@@ -55,18 +62,20 @@ public class AccountServiceImpl implements AccountService {
             throw new ClientNotFoundException("Client not found");
         }
 
-        List<Account> accountNumberSize = this.accountRepository.findAccountsByAccountTypeAndClientUUID(accountRequestDTO.getAccountType(), client.get().getUUID());
+        List<Account> accounts = this.accountRepository.findAccountsByAccountTypeAndClientUUID(accountRequestDTO.getAccountType(), client.get().getUUID());
 
-        Account theAccount = mapper.accountRequestDtoToAccount(accountRequestDTO);
-
-        if (accountNumberSize.size() >= maxAccountNumberOfCheckingType) {
+        if (accounts.size() == maxAccountNumberOfCheckingType) {
             throw new AccountNumberQuantityException("Client reach max account number of type: " + accountRequestDTO.getAccountType());
-        } else {
-            theAccount.setAccountNumber(AccountNumberGenerator.generateBankAccountNumber());
         }
 
-        theAccount.setClient(client.get());
-        theAccount.setCreatedAt(LocalDateTime.now());
+        Account theAccount = Account.builder()
+            .client(client.get())
+            .accountNumber(AccountNumberGenerator.generateBankAccountNumber())
+            .accountType(accountRequestDTO.getAccountType())
+            .balance(accountRequestDTO.getBalance())
+            .UUID(UUID.randomUUID().toString())
+            .createdAt(LocalDateTime.now())
+            .build();
 
         this.accountRepository.save(theAccount);
 

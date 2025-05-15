@@ -1,6 +1,4 @@
 spring:
-  application:
-    name: client-account-ms
   config:
     import: optional:configserver:http://localhost:8888
   devtools:
@@ -18,9 +16,9 @@ spring:
     password: ${DB_PASS:admin1234}
 
   # Hibernate
-  data:
-    rest:
-      base-path: /api
+#  data:
+#    rest:
+#      base-path: /api
   jpa:
     hibernate:
       ddl-auto: update

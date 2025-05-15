@@ -3,7 +3,11 @@ package com.ihomziak.clientaccountms.entity;
 import com.ihomziak.bankingapp.common.utils.AccountType;
 import jakarta.persistence.*;
 import jakarta.validation.constraints.NotNull;
+import lombok.AllArgsConstructor;
+import lombok.Builder;
+import lombok.Data;
 import lombok.Getter;
+import lombok.NoArgsConstructor;
 import lombok.Setter;
 import org.springframework.data.annotation.CreatedDate;
 import org.springframework.data.annotation.LastModifiedDate;
@@ -13,8 +17,10 @@ import java.time.LocalDateTime;
 
 @Entity
 @Table(name = "account")
-@Setter
-@Getter
+@Data
+@Builder
+@NoArgsConstructor
+@AllArgsConstructor
 public class Account {
 
     @Id

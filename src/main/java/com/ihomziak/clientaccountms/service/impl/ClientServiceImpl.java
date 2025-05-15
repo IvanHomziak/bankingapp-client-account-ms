@@ -27,6 +27,7 @@ import org.springframework.data.domain.Sort;
 
 import java.time.LocalDateTime;
 import java.util.*;
+import java.util.stream.Collectors;
 
 @Service
 public class ClientServiceImpl implements ClientService {
@@ -132,13 +133,16 @@ public class ClientServiceImpl implements ClientService {
 
     // Selects data from a database using query language
     @Override
-    public ClientResponseDTO findClientByName(final String firstName, final String lastName) {
-        Optional<Client> theClient = this.clientRepository.findByFirstNameAndLastNameIgnoreCase(firstName, lastName);
+    public List<ClientResponseDTO> findClientByName(final String firstName, final String lastName) {
+        List<Client> clientList = this.clientRepository.findByFirstNameAndLastNameIgnoreCase(firstName, lastName);
 
-        if (theClient.isEmpty()) {
+        if (clientList.isEmpty()) {
             throw new ClientNotFoundException(String.format("Client %s not found. Firstname: %s, Lastname: $s", firstName, lastName));
         }
-        return this.mapper.clientToClientResponseDto(theClient.get());
+
+        return clientList.stream()
+            .map(this.mapper::clientToClientResponseDto)
+            .collect(Collectors.toList());
     }
 
     @Override

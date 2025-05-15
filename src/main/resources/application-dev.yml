@@ -1,10 +1,4 @@
-# Server Configuration
-server:
-  port: ${PORT:8084}
-
 spring:
-  application:
-    name: client-account-ms
   config:
     import: optional:configserver:http://localhost:8888
   devtools:
@@ -24,9 +18,9 @@ spring:
     password: admin1234
 
   # Hibernate
-  data:
-    rest:
-      base-path: /api
+#  data:
+#    rest:
+#      base-path: /api
   jpa:
     hibernate:
       ddl-auto: validate

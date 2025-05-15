@@ -1,5 +1,6 @@
 package com.ihomziak.clientaccountms.dao;
 
+import java.util.List;
 import java.util.Optional;
 
 import org.springframework.data.jpa.repository.JpaRepository;
@@ -23,7 +24,7 @@ public interface ClientRepository extends JpaRepository<Client, Long>, JpaSpecif
 
     //
     @Query("SELECT c FROM Client c WHERE LOWER(c.firstName) = LOWER(:firstName) AND LOWER(c.lastName) = LOWER(:lastName)")
-    Optional<Client> findByFirstNameAndLastNameIgnoreCase(
+    List<Client> findByFirstNameAndLastNameIgnoreCase(
             @Param("firstName") String firstName,
             @Param("lastName") String lastName
     );

@@ -1,6 +1,13 @@
+# Server Configuration
+server:
+  port: ${PORT:8084}
+
 spring:
   profiles:
     active: prod
+
+  application:
+    name: client-account-ms
 
   flyway:
     validate-on-migrate: true

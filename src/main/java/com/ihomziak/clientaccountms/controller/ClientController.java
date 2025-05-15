@@ -74,7 +74,7 @@ public class ClientController {
     }
 
     @GetMapping(SEARCH_CLIENT)
-    public ResponseEntity<ClientResponseDTO> searchClient(
+    public ResponseEntity<List<ClientResponseDTO>> searchClient(
             @RequestParam("firstName") String firstName,
             @RequestParam("lastName") String lastName
     ) {
