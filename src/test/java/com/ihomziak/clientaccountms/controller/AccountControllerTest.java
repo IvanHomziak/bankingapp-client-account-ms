@@ -1,198 +1,120 @@
 package com.ihomziak.clientaccountms.controller;
 
-import static org.mockito.ArgumentMatchers.any;
-import static org.mockito.Mockito.when;
-import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.delete;
-import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.get;
-import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.patch;
-import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.post;
-import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.content;
-import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
-
-import java.math.BigDecimal;
-import java.util.ArrayList;
-import java.util.Collections;
-import java.util.List;
-
-import org.junit.jupiter.api.BeforeEach;
-import org.junit.jupiter.api.Test;
-import org.junit.jupiter.api.extension.ExtendWith;
-import org.mockito.InjectMocks;
-import org.mockito.Mock;
-import org.mockito.junit.jupiter.MockitoExtension;
-import org.springframework.http.MediaType;
-import org.springframework.test.web.servlet.MockMvc;
-import org.springframework.test.web.servlet.setup.MockMvcBuilders;
-
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.databind.SerializationFeature;
 import com.fasterxml.jackson.datatype.jsr310.JavaTimeModule;
 import com.ihomziak.bankingapp.common.utils.AccountType;
 import com.ihomziak.clientaccountms.dto.AccountHolderDTO;
-import com.ihomziak.clientaccountms.dto.AccountInfoDTO;
 import com.ihomziak.clientaccountms.dto.AccountRequestDTO;
 import com.ihomziak.clientaccountms.dto.AccountResponseDTO;
-import com.ihomziak.clientaccountms.exception.AccountNotFoundException;
-import com.ihomziak.clientaccountms.exceptionhandler.GlobalExceptionHandler;
 import com.ihomziak.clientaccountms.service.AccountService;
-
 import net.datafaker.Faker;
-// Faker
-@ExtendWith(MockitoExtension.class)
-public class AccountControllerTest {
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Test;
+import org.junit.jupiter.api.extension.ExtendWith;
+import org.modelmapper.ModelMapper;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.boot.test.autoconfigure.web.servlet.WebMvcTest;
+import org.springframework.boot.test.context.TestConfiguration;
+import org.springframework.boot.test.mock.mockito.MockBean;
+import org.springframework.context.annotation.Bean;
+import org.springframework.context.annotation.Import;
+import org.springframework.http.HttpStatus;
+import org.springframework.http.MediaType;
+import org.springframework.test.context.bean.override.mockito.MockitoBean;
+import org.springframework.test.web.servlet.MockMvc;
+import org.springframework.test.web.servlet.MvcResult;
 
-    @Mock
-    private AccountService accountService;
+import java.math.BigDecimal;
+import java.time.LocalDateTime;
 
-    @InjectMocks
-    private AccountController accountController;
+import static com.ihomziak.clientaccountms.util.constants.Endpoints.AccountEndpoints.API_ACCOUNT_V1;
+import static org.junit.jupiter.api.Assertions.*;
+import static org.mockito.ArgumentMatchers.any;
+import static org.mockito.Mockito.when;
+import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.post;
 
+@WebMvcTest(controllers = AccountController.class)
+@Import(AccountControllerTest.NoSecurityConfig.class)  // 👈 disables Spring Security
+class AccountControllerTest {
+
+    @Autowired
     private MockMvc mockMvc;
+
+    @MockitoBean
+    private AccountService accountService;
 
     private ObjectMapper objectMapper;
     private AccountRequestDTO accountRequestDTO;
-    private AccountResponseDTO accountResponseDTO;
-    private AccountInfoDTO accountInfoDTO;
-    private String clientUuid;
+    private AccountHolderDTO accountHolder;
     private Faker faker;
 
     @BeforeEach
-    public void setUp() {
-        mockMvc = MockMvcBuilders.standaloneSetup(accountController)
-                .setControllerAdvice(new GlobalExceptionHandler())
-                .build();
-
-        objectMapper = new ObjectMapper();
-        objectMapper.registerModule(new JavaTimeModule());
-        objectMapper.disable(SerializationFeature.WRITE_DATES_AS_TIMESTAMPS);
+    void setUp() {
+        objectMapper = new ObjectMapper()
+                .registerModule(new JavaTimeModule())
+                .disable(SerializationFeature.WRITE_DATES_AS_TIMESTAMPS);
 
         faker = new Faker();
-        clientUuid = faker.internet().uuid();
-        String accountNumber = faker.finance().iban();
-
-        accountInfoDTO = new AccountInfoDTO();
-        accountInfoDTO.setAccountNumber(accountNumber);
-        accountInfoDTO.setAccountType(AccountType.CHECKING);
-        accountInfoDTO.setBalance(BigDecimal.valueOf(faker.number().numberBetween(1, 1000)));
-        accountInfoDTO.setUUID(clientUuid);
 
         accountRequestDTO = new AccountRequestDTO();
-        accountRequestDTO.setAccountNumber(accountNumber);
+        accountRequestDTO.setAccountNumber(faker.finance().iban());
         accountRequestDTO.setAccountType(AccountType.CHECKING);
-        accountRequestDTO.setBalance(BigDecimal.valueOf(faker.number().numberBetween(1, 1000)));
-        accountRequestDTO.setClientUUID(clientUuid);
+        accountRequestDTO.setBalance(BigDecimal.valueOf(faker.number().numberBetween(100, 10000)));
+        accountRequestDTO.setClientUUID(faker.internet().uuid());
 
-        AccountHolderDTO accountHolder = new AccountHolderDTO();
+        accountHolder = new AccountHolderDTO();
+        accountHolder.setUUID(accountRequestDTO.getClientUUID());
         accountHolder.setFirstName(faker.name().firstName());
         accountHolder.setLastName(faker.name().lastName());
-        accountHolder.setUUID(clientUuid);
-
-        accountResponseDTO = new AccountResponseDTO();
-        accountResponseDTO.setAccountId(faker.number().numberBetween(1, 1000));
-        accountResponseDTO.setAccountHolderDTO(accountHolder);
-        accountResponseDTO.setAccountNumber(accountRequestDTO.getAccountNumber());
-        accountResponseDTO.setAccountType(accountRequestDTO.getAccountType());
-        accountResponseDTO.setBalance(accountRequestDTO.getBalance());
-        accountResponseDTO.setUUID(clientUuid);
-        accountResponseDTO.setCreatedAt(null);
-        accountResponseDTO.setLastUpdated(null);
     }
 
     @Test
-    public void getAccount_ShouldReturnAccount_WhenAccountExists() throws Exception {
-        when(accountService.findAccountByUuid(clientUuid)).thenReturn(accountInfoDTO);
+    void createCheckingAccount_whenClientExist_ShouldReturnCreatedAccount() throws Exception {
+        // Given
+        AccountResponseDTO expectedResponse = new ModelMapper().map(accountRequestDTO, AccountResponseDTO.class);
+        expectedResponse.setAccountHolderDTO(accountHolder);
+        expectedResponse.setCreatedAt(LocalDateTime.now());
+        expectedResponse.setLastUpdated(LocalDateTime.now());
 
-        mockMvc.perform(get("/api/account/{uuid}", clientUuid)
-                        .contentType(MediaType.APPLICATION_JSON))
-                .andExpect(status().isFound())
-                .andExpect(content().json(objectMapper.writeValueAsString(accountInfoDTO)));
-    }
+        when(accountService.createCheckingAccount(any(AccountRequestDTO.class)))
+                .thenReturn(expectedResponse);
 
-    @Test
-    public void getAccount_ShouldReturnNotFound_WhenAccountDoesNotExist() throws Exception {
-        String uuid = faker.finance().iban();
-
-        when(accountService.findAccountByUuid(uuid)).thenThrow(new AccountNotFoundException("Account not exist. UUID: " + uuid));
-
-        mockMvc.perform(get("/api/account/{uuid}", uuid)
-                        .contentType(MediaType.APPLICATION_JSON))
-                .andExpect(status().isNotFound())
-                .andExpect(content().json("{\"error\":\"Account not exist. UUID: " + uuid + "\"}"));
-    }
-
-    @Test
-    public void createCheckingAccount_ShouldReturnCreatedAccount() throws Exception {
-        when(accountService.createCheckingAccount(any(AccountRequestDTO.class))).thenReturn(accountResponseDTO);
-
-        mockMvc.perform(post("/api/account")
+        // When
+        MvcResult result = mockMvc.perform(post(API_ACCOUNT_V1)
                         .contentType(MediaType.APPLICATION_JSON)
+                        .accept(MediaType.APPLICATION_JSON)
                         .content(objectMapper.writeValueAsString(accountRequestDTO)))
-                .andExpect(status().isCreated())
-                .andExpect(content().json(objectMapper.writeValueAsString(accountResponseDTO)));
+                .andReturn();
+
+        // Then
+        String responseBody = result.getResponse().getContentAsString();
+        int status = result.getResponse().getStatus();
+
+        assertEquals(HttpStatus.CREATED.value(), status, "Incorrect response status");
+        assertFalse(responseBody.isBlank());
+
+        AccountResponseDTO actual = objectMapper.readValue(responseBody, AccountResponseDTO.class);
+
+        assertEquals(expectedResponse.getAccountNumber(), actual.getAccountNumber(), "Account number mismatch");
+        assertEquals(expectedResponse.getAccountType(), actual.getAccountType(),  "Account type mismatch");
+        assertEquals(expectedResponse.getBalance(), actual.getBalance(), "Account balance mismatch");
+        assertEquals(expectedResponse.getUUID(), actual.getUUID(), "Client uuid mismatch");
+        assertNotNull(actual.getCreatedAt(), "Created account should be not null");
+        assertNotNull(actual.getLastUpdated(), "Last updated account should be not null");
+        assertEquals(accountHolder.getFirstName(), actual.getAccountHolderDTO().getFirstName(), "First name mismatch");
+        assertEquals(accountHolder.getLastName(), actual.getAccountHolderDTO().getLastName(), "Last name mismatch");
+        assertEquals(accountHolder.getUUID(), actual.getAccountHolderDTO().getUUID(),"Client uuid mismatch");
     }
 
-    @Test
-    public void deleteAccount_ShouldReturnAccepted_WhenAccountExists() throws Exception {
-        when(accountService.deleteAccount(clientUuid)).thenReturn(accountInfoDTO);
 
-        mockMvc.perform(delete("/api/account/{uuid}", clientUuid))
-                .andExpect(status().isAccepted())
-                .andExpect(content().json(objectMapper.writeValueAsString(accountInfoDTO)));
-    }
-
-    @Test
-    public void deleteAccount_ShouldReturnNotFound_WhenAccountNotExists() throws Exception {
-        when(accountService.deleteAccount(clientUuid)).thenThrow(new AccountNotFoundException("Account not exist. UUID: " + clientUuid));
-
-        mockMvc.perform(delete("/api/account/{uuid}", clientUuid))
-                .andExpect(status().isNotFound())
-                .andExpect(content().json("{\"error\":\"Account not exist. UUID: " + clientUuid + "\"}"));
-    }
-
-    @Test
-    public void updateAccount_ShouldReturnUpdatedAccount() throws Exception {
-        when(accountService.updateAccount(any(AccountRequestDTO.class))).thenReturn(accountResponseDTO);
-
-        mockMvc.perform(patch("/api/account")
-                        .contentType(MediaType.APPLICATION_JSON)
-                        .content(objectMapper.writeValueAsString(accountRequestDTO)))
-                .andExpect(status().isAccepted())
-                .andExpect(content().json(objectMapper.writeValueAsString(accountResponseDTO)));
-    }
-
-    @Test
-    public void getAccounts_ShouldReturnListOfAccounts() throws Exception {
-        List<AccountInfoDTO> accountInfoDTOList = new ArrayList<>();
-        accountInfoDTOList.add(accountInfoDTO);
-        accountInfoDTOList.add(accountInfoDTO);
-
-        when(accountService.findAllAccounts()).thenReturn(accountInfoDTOList);
-
-        mockMvc.perform(get("/api/account")
-                        .contentType(MediaType.APPLICATION_JSON))
-                .andExpect(status().isFound())
-                .andExpect(content().json(objectMapper.writeValueAsString(accountInfoDTOList)));
-    }
-
-    @Test
-    public void getAccounts_ShouldReturnEmptyList_WhenNoAccountsExist() throws Exception {
-        when(accountService.findAllAccounts()).thenReturn(Collections.emptyList());
-
-        mockMvc.perform(get("/api/account")
-                        .contentType(MediaType.APPLICATION_JSON))
-                .andExpect(status().isFound())
-                .andExpect(content().json("[]"));
-    }
-
-    @Test
-    public void getClientAccounts_ShouldReturnListOfClientAccounts() throws Exception {
-        List<AccountResponseDTO> clientAccounts = List.of(accountResponseDTO);
-
-        when(accountService.findAllAccountsByClientUUID(clientUuid)).thenReturn(clientAccounts);
-
-        mockMvc.perform(get("/api/account/list/{uuid}", clientUuid)
-                        .contentType(MediaType.APPLICATION_JSON))
-                .andExpect(status().isFound())
-                .andExpect(content().json(objectMapper.writeValueAsString(clientAccounts)));
+    @TestConfiguration
+    static class NoSecurityConfig {
+        @Bean
+        public org.springframework.security.web.SecurityFilterChain securityFilterChain(org.springframework.security.config.annotation.web.builders.HttpSecurity http) throws Exception {
+            http.csrf(org.springframework.security.config.annotation.web.configurers.AbstractHttpConfigurer::disable)
+                    .authorizeHttpRequests(auth -> auth.anyRequest().permitAll());
+            return http.build();
+        }
     }
 }

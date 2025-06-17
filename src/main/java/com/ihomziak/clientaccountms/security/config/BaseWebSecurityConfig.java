@@ -1,9 +1,11 @@
-package com.ihomziak.clientaccountms.security;
+package com.ihomziak.clientaccountms.security.config;
 
 import static com.ihomziak.clientaccountms.util.constants.Endpoints.AccountEndpoints.*;
 import static com.ihomziak.clientaccountms.util.constants.Endpoints.ClientEndpoints.*;
 import static com.ihomziak.clientaccountms.util.constants.Endpoints.SwaggerEndpoints.*;
 
+import com.ihomziak.clientaccountms.security.filter.DevAuthorizationFilter;
+import com.ihomziak.clientaccountms.security.filter.ProdAuthorizationFilter;
 import org.springframework.core.env.Environment;
 import org.springframework.core.env.Profiles;
 import org.springframework.http.HttpMethod;

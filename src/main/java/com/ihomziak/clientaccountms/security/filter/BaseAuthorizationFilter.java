@@ -1,4 +1,4 @@
-package com.ihomziak.clientaccountms.security;
+package com.ihomziak.clientaccountms.security.filter;
 
 import java.io.IOException;
 import java.util.List;

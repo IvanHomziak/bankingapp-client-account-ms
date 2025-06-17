@@ -1,4 +1,4 @@
-package com.ihomziak.clientaccountms.security;
+package com.ihomziak.clientaccountms.security.config;
 
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
@@ -8,17 +8,17 @@ import org.springframework.security.config.annotation.web.builders.HttpSecurity;
 import org.springframework.security.config.annotation.web.configuration.EnableWebSecurity;
 import org.springframework.security.web.SecurityFilterChain;
 
-@Profile("dev")
+@Profile("prod")
 @Configuration
 @EnableWebSecurity
-public class WebSecurityDev extends BaseWebSecurityConfig {
+public class ProdWebSecurityConfig extends BaseWebSecurityConfig {
 
-	public WebSecurityDev(Environment environment) {
+	public ProdWebSecurityConfig(Environment environment) {
 		super(environment);
 	}
 
 	@Bean
-	public SecurityFilterChain devSecurityFilterChain(HttpSecurity http) throws Exception {
-		return configure(http, true);
+	public SecurityFilterChain prodSecurityFilterChain(HttpSecurity http) throws Exception {
+		return configure(http, false);
 	}
 }

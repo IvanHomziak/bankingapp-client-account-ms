@@ -1,4 +1,4 @@
-package com.ihomziak.clientaccountms.security;
+package com.ihomziak.clientaccountms.security.filter;
 
 import static com.ihomziak.clientaccountms.util.constants.Endpoints.SwaggerEndpoints.*;
 
