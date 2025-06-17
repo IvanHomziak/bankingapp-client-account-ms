@@ -7,6 +7,7 @@ import com.ihomziak.bankingapp.common.utils.AccountType;
 import com.ihomziak.clientaccountms.dto.AccountHolderDTO;
 import com.ihomziak.clientaccountms.dto.AccountRequestDTO;
 import com.ihomziak.clientaccountms.dto.AccountResponseDTO;
+import com.ihomziak.clientaccountms.exception.ClientNotFoundException;
 import com.ihomziak.clientaccountms.service.AccountService;
 import net.datafaker.Faker;
 import org.junit.jupiter.api.BeforeEach;
@@ -27,12 +28,15 @@ import org.springframework.test.web.servlet.MvcResult;
 
 import java.math.BigDecimal;
 import java.time.LocalDateTime;
+import java.util.UUID;
 
 import static com.ihomziak.clientaccountms.util.constants.Endpoints.AccountEndpoints.API_ACCOUNT_V1;
 import static org.junit.jupiter.api.Assertions.*;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.Mockito.when;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.post;
+import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.content;
+import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
 
 @WebMvcTest(controllers = AccountController.class)
 @Import(AccountControllerTest.NoSecurityConfig.class)  // 👈 disables Spring Security
@@ -106,6 +110,27 @@ class AccountControllerTest {
         assertEquals(accountHolder.getLastName(), actual.getAccountHolderDTO().getLastName(), "Last name mismatch");
         assertEquals(accountHolder.getUUID(), actual.getAccountHolderDTO().getUUID(),"Client uuid mismatch");
     }
+
+    @Test
+    void createCheckingAccount_whenClientNotExist_ShouldReturnClientNotFoundException() throws Exception {
+        // Arrange
+        accountRequestDTO.setClientUUID(UUID.randomUUID().toString());
+        String errorMessage = "Client not found: " + accountRequestDTO.getClientUUID();
+        when(accountService.createCheckingAccount(any(AccountRequestDTO.class)))
+                .thenThrow(new ClientNotFoundException(errorMessage));
+
+        // Act + Assert
+        mockMvc.perform(post(API_ACCOUNT_V1)
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .content(objectMapper.writeValueAsString(accountRequestDTO)))
+                .andExpect(status().isNotFound())
+                .andExpect(content().json("""
+                    {
+                        "error": "%s"
+                    }
+                    """.formatted(errorMessage)));
+    }
+
 
 
     @TestConfiguration
