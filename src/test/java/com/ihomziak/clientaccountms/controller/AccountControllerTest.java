@@ -49,7 +49,8 @@ import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.
 @WebMvcTest(controllers = AccountController.class)
 @Import({
         AccountControllerTest.NoSecurityConfig.class, // 👈 disables Spring Security
-        GlobalExceptionHandler.class})
+        GlobalExceptionHandler.class
+})
 class AccountControllerTest {
 
     @Autowired
