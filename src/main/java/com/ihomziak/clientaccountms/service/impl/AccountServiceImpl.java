@@ -139,6 +139,11 @@ public class AccountServiceImpl implements AccountService {
     @Override
     @Transactional
     public List<AccountResponseDTO> findAllAccountsByClientUUID(String uuid) {
+        Optional<Client> client = this.clientRepository.findClientByUUID(uuid);
+        if (client.isEmpty()) {
+            throw new ClientNotFoundException("Client not found. UUID: " + uuid);
+        }
+
         List<Account> accountList = this.accountRepository.findAccountsByClientUUID(uuid);
         List<AccountResponseDTO> accountResponseDTOList = new ArrayList<>();
         for (Account account : accountList) {
