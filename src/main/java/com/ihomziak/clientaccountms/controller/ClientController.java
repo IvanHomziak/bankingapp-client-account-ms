@@ -35,7 +35,7 @@ public class ClientController {
 
     @GetMapping(GET_CLIENT)
     public ResponseEntity<ClientResponseDTO> getClient(@PathVariable String uuid) {
-        return ResponseEntity.status(HttpStatus.FOUND).body(this.clientService.findClientByUUID(uuid));
+        return ResponseEntity.status(HttpStatus.OK).body(this.clientService.findClientByUUID(uuid));
     }
 
     @GetMapping
@@ -59,7 +59,7 @@ public class ClientController {
                 ? clientService.findUsers(order, firstName, lastName, email, page, size)
                 : clientService.findAll();
 
-        return ResponseEntity.status(HttpStatus.FOUND).body(result);
+        return ResponseEntity.status(HttpStatus.OK).body(result);
     }
 
 

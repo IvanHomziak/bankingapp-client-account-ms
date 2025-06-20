@@ -63,7 +63,7 @@ class AccountServiceImplTest {
     @BeforeEach
     void setup() {
         accountRequestDTO = new AccountRequestDTO();
-        accountRequestDTO.setClientUUID("client-uuid");
+        accountRequestDTO.setAccountUuid("client-uuid");
         accountRequestDTO.setAccountNumber("123456789");
         accountRequestDTO.setAccountType(AccountType.CHECKING);
         accountRequestDTO.setBalance(BigDecimal.valueOf(1000.0));

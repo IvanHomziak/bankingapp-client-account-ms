@@ -28,7 +28,6 @@ class AccountResponseDTOTest {
         LocalDateTime lastUpdated = LocalDateTime.now();
 
         // Act
-        accountResponseDTO.setAccountId(accountId);
         accountResponseDTO.setAccountHolderDTO(accountHolderDTO);
         accountResponseDTO.setAccountNumber(accountNumber);
         accountResponseDTO.setAccountType(accountType);
@@ -38,7 +37,6 @@ class AccountResponseDTOTest {
         accountResponseDTO.setLastUpdated(lastUpdated);
 
         // Assert
-        assertEquals(accountId, accountResponseDTO.getAccountId());
         assertEquals(accountHolderDTO, accountResponseDTO.getAccountHolderDTO());
         assertEquals(accountNumber, accountResponseDTO.getAccountNumber());
         assertEquals(accountType, accountResponseDTO.getAccountType());
@@ -52,7 +50,6 @@ class AccountResponseDTOTest {
     void testToString() {
         // Arrange
         AccountResponseDTO accountResponseDTO = new AccountResponseDTO();
-        accountResponseDTO.setAccountId(1L);
 
         AccountHolderDTO accountHolderDTO = new AccountHolderDTO();
         accountHolderDTO.setUUID("123e4567-e89b-12d3-a456-426614174000");
@@ -87,7 +84,6 @@ class AccountResponseDTOTest {
         // Arrange
         BigDecimal balance = BigDecimal.valueOf(1000.0);
         AccountResponseDTO dto1 = new AccountResponseDTO();
-        dto1.setAccountId(1L);
         dto1.setAccountNumber("123456789012345678");
         dto1.setAccountType(AccountType.CHECKING);
         dto1.setBalance(balance);
@@ -96,7 +92,6 @@ class AccountResponseDTOTest {
         dto1.setLastUpdated(LocalDateTime.of(2024, 11, 22, 12, 30));
 
         AccountResponseDTO dto2 = new AccountResponseDTO();
-        dto2.setAccountId(1L);
         dto2.setAccountNumber("123456789012345678");
         dto2.setAccountType(AccountType.CHECKING);
         dto2.setBalance(balance);
@@ -105,7 +100,6 @@ class AccountResponseDTOTest {
         dto2.setLastUpdated(LocalDateTime.of(2024, 11, 22, 12, 30));
 
         AccountResponseDTO dto3 = new AccountResponseDTO();
-        dto3.setAccountId(2L);
         dto3.setAccountNumber("987654321098765432");
         dto3.setAccountType(AccountType.SAVINGS);
         dto3.setBalance(BigDecimal.valueOf(2000.0));
@@ -124,7 +118,6 @@ class AccountResponseDTOTest {
     void testEqualsWithNullAndDifferentClass() {
         // Arrange
         AccountResponseDTO dto = new AccountResponseDTO();
-        dto.setAccountId(1L);
         dto.setAccountNumber("123456789012345678");
         dto.setAccountType(AccountType.CHECKING);
         dto.setBalance(BigDecimal.valueOf(1000.50));

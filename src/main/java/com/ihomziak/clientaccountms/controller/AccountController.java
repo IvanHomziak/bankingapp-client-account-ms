@@ -53,7 +53,6 @@ public class AccountController {
 
     @GetMapping
     public ResponseEntity<List<AccountInfoDTO>> getAccounts() {
-        return ResponseEntity.status(HttpStatus.FOUND).body(this.accountService.findAllAccounts());
+        return ResponseEntity.status(HttpStatus.OK).body(this.accountService.findAllAccounts());
     }
-
 }

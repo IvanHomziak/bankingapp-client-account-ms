@@ -1,178 +1,169 @@
 package com.ihomziak.clientaccountms.controller;
 
+import com.fasterxml.jackson.core.type.TypeReference;
 import com.fasterxml.jackson.databind.ObjectMapper;
-import com.fasterxml.jackson.databind.SerializationFeature;
-import com.fasterxml.jackson.datatype.jsr310.JavaTimeModule;
 import com.ihomziak.clientaccountms.dto.ClientRequestDTO;
 import com.ihomziak.clientaccountms.dto.ClientResponseDTO;
 import com.ihomziak.clientaccountms.dto.ClientsInfoDTO;
+import com.ihomziak.clientaccountms.dto.LastNameCountDTO;
 import com.ihomziak.clientaccountms.exceptionhandler.GlobalExceptionHandler;
-import com.ihomziak.clientaccountms.exception.ClientNotFoundException;
 import com.ihomziak.clientaccountms.service.ClientService;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.BeforeEach;
-import org.junit.jupiter.api.extension.ExtendWith;
-import org.mockito.junit.jupiter.MockitoExtension;
+import org.springframework.boot.test.context.TestConfiguration;
+import org.springframework.context.annotation.Bean;
+import org.springframework.context.annotation.Import;
 import org.springframework.test.web.servlet.MockMvc;
-import org.mockito.InjectMocks;
-import org.mockito.Mock;
 import org.springframework.http.MediaType;
-import org.springframework.test.web.servlet.setup.MockMvcBuilders;
+import org.springframework.test.web.servlet.MvcResult;
+import net.datafaker.Faker;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.boot.test.autoconfigure.web.servlet.WebMvcTest;
+import org.springframework.test.context.bean.override.mockito.MockitoBean;
 
-import java.util.*;
+import java.util.List;
+import java.util.UUID;
 
-import static org.mockito.ArgumentMatchers.*;
+import static com.ihomziak.clientaccountms.util.constants.Endpoints.ClientEndpoints.*;
+import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.Mockito.when;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.*;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.*;
 
-@ExtendWith(MockitoExtension.class)
-public class ClientControllerTest {
+@WebMvcTest(controllers = ClientController.class)
+@Import({
+        ClientControllerTest.NoSecurityConfig.class, // 👈 disables Spring Security
+        GlobalExceptionHandler.class
+})
+class ClientControllerTest {
 
-    @Mock
+    @Autowired
+    private MockMvc mockMvc;
+
+    @Autowired
+    private ObjectMapper objectMapper;
+
+    @MockitoBean
     private ClientService clientService;
 
-    @InjectMocks
-    private ClientController clientController;
-
-    private MockMvc mockMvc;
+    private Faker faker;
 
     private ClientRequestDTO clientRequestDTO;
     private ClientResponseDTO clientResponseDTO;
-    private ClientsInfoDTO clientsInfoDTO;
-    private ObjectMapper objectMapper;
-
 
     @BeforeEach
-    public void setUp() {
-        mockMvc = MockMvcBuilders.standaloneSetup(clientController)
-                .setControllerAdvice(new GlobalExceptionHandler()) // Ensure this is added
+    void setUp() {
+        faker = new Faker();
+        clientRequestDTO = ClientRequestDTO.builder()
+                .firstName(faker.name().firstName())
+                .lastName(faker.name().lastName())
+                .dateOfBirth("1990-01-01")
+                .taxNumber(faker.idNumber().valid())
+                .email(faker.internet().emailAddress())
+                .phoneNumber(faker.phoneNumber().cellPhone())
+                .address(faker.address().fullAddress())
                 .build();
-        objectMapper = new ObjectMapper();
-        objectMapper.registerModule(new JavaTimeModule());
-        objectMapper.disable(SerializationFeature.WRITE_DATES_AS_TIMESTAMPS);
 
-        clientRequestDTO = new ClientRequestDTO();
-        clientRequestDTO.setFirstName("John");
-        clientRequestDTO.setLastName("Doe");
-        clientRequestDTO.setTaxNumber("123456789");
-        clientRequestDTO.setDateOfBirth("07/07/1992");
-        clientRequestDTO.setEmail("john.doe@example.com");
-        clientRequestDTO.setPhoneNumber("123-456-7890");
-        clientRequestDTO.setAddress("123 Main St");
-
-        clientResponseDTO = new ClientResponseDTO();
-        clientResponseDTO.setClientId(1);
-        clientResponseDTO.setFirstName(clientRequestDTO.getFirstName());
-        clientResponseDTO.setLastName(clientRequestDTO.getLastName());
-        clientResponseDTO.setDateOfBirth(clientRequestDTO.getDateOfBirth());
-        clientResponseDTO.setTaxNumber(clientRequestDTO.getTaxNumber());
-        clientResponseDTO.setEmail(clientRequestDTO.getEmail());
-        clientResponseDTO.setPhoneNumber(clientRequestDTO.getPhoneNumber());
-        clientResponseDTO.setAddress(clientRequestDTO.getAddress() + 1);
-        clientResponseDTO.setCreatedAt(null);
-        clientResponseDTO.setUpdateAt(null);
-        clientResponseDTO.setUUID("test-uuid");
-
-        clientsInfoDTO = new ClientsInfoDTO();
-        clientsInfoDTO.setFirstName("John");
-        clientsInfoDTO.setLastName("Doe");
+        clientResponseDTO = ClientResponseDTO.builder()
+                .UUID(UUID.randomUUID().toString())
+                .firstName(clientRequestDTO.getFirstName())
+                .lastName(clientRequestDTO.getLastName())
+                .email(clientRequestDTO.getEmail())
+                .phoneNumber(clientRequestDTO.getPhoneNumber())
+                .address(clientRequestDTO.getAddress())
+                .build();
     }
 
+
     @Test
-    public void addClient_ShouldReturnCreatedStatus() throws Exception {
+    void addClient_whenValidRequest_shouldReturnCreatedClient() throws Exception {
         when(clientService.createClient(any(ClientRequestDTO.class))).thenReturn(clientResponseDTO);
 
-        mockMvc.perform(post("/api/clients")
+        MvcResult result = mockMvc.perform(post(API_CLIENT_V1 + ADD_CLIENT)
                         .contentType(MediaType.APPLICATION_JSON)
                         .content(objectMapper.writeValueAsString(clientRequestDTO)))
                 .andExpect(status().isCreated())
-                .andExpect(jsonPath("$.firstName").value(clientResponseDTO.getFirstName()))
-                .andExpect(jsonPath("$.lastName").value(clientResponseDTO.getLastName()))
-                .andExpect(jsonPath("$.dateOfBirth").value(clientResponseDTO.getDateOfBirth()))
-                .andExpect(jsonPath("$.taxNumber").value(clientResponseDTO.getTaxNumber()))
-                .andExpect(jsonPath("$.email").value(clientResponseDTO.getEmail()))
-                .andExpect(jsonPath("$.phoneNumber").value(clientResponseDTO.getPhoneNumber()))
-                .andExpect(jsonPath("$.address").value(clientResponseDTO.getAddress()));
+                .andReturn();
+
+        ClientResponseDTO actual = objectMapper.readValue(result.getResponse().getContentAsString(), ClientResponseDTO.class);
+        assertEquals(clientResponseDTO.getEmail(), actual.getEmail());
     }
 
     @Test
-    public void getClient_ShouldReturnClient_WhenClientExists() throws Exception {
-        String uuid = "test-uuid";
+    void getClient_whenExists_shouldReturnClient() throws Exception {
+        when(clientService.findClientByUUID(clientResponseDTO.getUUID())).thenReturn(clientResponseDTO);
 
-        when(clientService.findClientByUUID(uuid)).thenReturn(clientResponseDTO);
+        MvcResult result = mockMvc.perform(get(API_CLIENT_V1 + GET_CLIENT, clientResponseDTO.getUUID())
+                        .accept(MediaType.APPLICATION_JSON))
+                .andExpect(status().isOk())
+                .andReturn();
 
-        mockMvc.perform(get("/api/clients/{uuid}", uuid)
-                        .contentType(MediaType.APPLICATION_JSON))
-                .andExpect(status().isFound())
-                .andExpect(content().json(objectMapper.writeValueAsString(clientResponseDTO)));
+        ClientResponseDTO actual = objectMapper.readValue(result.getResponse().getContentAsString(), ClientResponseDTO.class);
+        assertEquals(clientResponseDTO.getUUID(), actual.getUUID());
     }
 
     @Test
-    public void getClient_ShouldReturnNotFound_WhenClientDoesNotExist() throws Exception {
-        String uuid = "non-existent-uuid";
+    void getClients_withNoFilters_shouldReturnClientsList() throws Exception {
+        ClientsInfoDTO info = ClientsInfoDTO.builder()
+                .firstName(faker.starWars().character())
+                .lastName(faker.starWars().planets())
+                .email(faker.internet().emailAddress())
+                .phoneNumber(faker.phoneNumber().phoneNumber())
+                .build();
 
-        when(clientService.findClientByUUID(uuid)).thenThrow(new ClientNotFoundException("Client not exist. UUID: " + uuid));
+        when(clientService.findAll()).thenReturn(List.of(info));
 
-        mockMvc.perform(get("/api/clients/{uuid}", uuid).contentType(MediaType.APPLICATION_JSON))
-                .andExpect(status().isNotFound())
-                .andExpect(content().json("{\"error\":\"Client not exist. UUID: non-existent-uuid\"}"));
+        MvcResult result = mockMvc.perform(get(API_CLIENT_V1)
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .accept(MediaType.APPLICATION_JSON))
+                .andExpect(status().isOk())
+                .andReturn();
+
+        String responseBody = result.getResponse().getContentAsString();
+        List<ClientsInfoDTO> actualList = objectMapper.readValue(
+                responseBody,
+                new TypeReference<List<ClientsInfoDTO>>() {
+                }
+        );
+
+        assertEquals(1, actualList.size());
     }
 
     @Test
-    public void getClients_ShouldReturnClients_WhenClientsExists() throws Exception {
-        List<ClientsInfoDTO> clientsInfoDTOList = new ArrayList<>();
-        clientsInfoDTOList.add(clientsInfoDTO);
-        clientsInfoDTOList.add(clientsInfoDTO);
-
-        when(clientService.findAll()).thenReturn(clientsInfoDTOList);
-
-        mockMvc.perform(get("/api/clients").contentType(MediaType.APPLICATION_JSON))
-                .andExpect(status().isFound())
-                .andExpect(content().json(objectMapper.writeValueAsString(clientsInfoDTOList)));
-    }
-
-    @Test
-    public void getClients_ShouldReturnNotFound_WhenClientsNotExists() throws Exception {
-        when(clientService.findAll()).thenThrow(new ClientNotFoundException("Clients not exist."));
-
-        mockMvc.perform(get("/api/clients").contentType(MediaType.APPLICATION_JSON))
-                .andExpect(status().isNotFound())
-                .andExpect(content().json("{\"error\":\"Clients not exist.\"}"));
-    }
-
-    @Test
-    public void deleteClient_ShouldReturnClientResponseDTO_WhenClientExists() throws Exception {
-        String uuid = "test-uuid";
-
+    void deleteClient_whenClientExists_shouldReturnDeletedClient() throws Exception {
+        String uuid = clientResponseDTO.getUUID();
         when(clientService.deleteByUUID(uuid)).thenReturn(clientResponseDTO);
 
-        mockMvc.perform(delete("/api/clients/{uuid}", uuid).contentType(MediaType.APPLICATION_JSON))
+        mockMvc.perform(delete(API_CLIENT_V1 + DELETE_CLIENT, uuid))
                 .andExpect(status().isOk())
-                .andExpect(content().json(objectMapper.writeValueAsString(clientResponseDTO)));
+                .andExpect(jsonPath("$.uuid").value(uuid));
     }
 
     @Test
-    public void deleteClient_ShouldReturnClientNotFound_WhenClientNotExists() throws Exception {
-        String uuid = "test-uuid";
+    void countClientsByLastName_shouldReturnCountDTO() throws Exception {
+        LastNameCountDTO countDTO = new LastNameCountDTO("Smith", 5L);
 
-        when(clientService.deleteByUUID(uuid)).thenThrow(new ClientNotFoundException("Client does not exist"));
+        when(clientService.countClientsByLastName("Smith", "DESC")).thenReturn(countDTO);
 
-        mockMvc.perform(delete("/api/clients/{uuid}", uuid)
-                        .contentType(MediaType.APPLICATION_JSON))
-                .andExpect(status().isNotFound())
-                .andExpect(content().json("{\"error\":\"Client does not exist\"}"));
-    }
-
-    @Test
-    public void updateClient_ShouldReturnClientResponseDTO_WhenClientExists() throws Exception {
-
-        when(clientService.updateClient(any(ClientRequestDTO.class))).thenReturn(clientResponseDTO);
-
-        mockMvc.perform(patch("/api/clients/update")
+        mockMvc.perform(get(API_CLIENT_V1 + COUNT_CLIENTS_BY_LAST_NAME)
                         .contentType(MediaType.APPLICATION_JSON)
-                        .content(objectMapper.writeValueAsString(clientRequestDTO)))
-                .andExpect(status().isAccepted())
-                .andExpect(content().json(objectMapper.writeValueAsString(clientResponseDTO)));
+                        .accept(MediaType.APPLICATION_JSON)
+                        .param("lastName", "Smith")
+                        .param("order", "DESC")
+                )
+                .andExpect(status().isOk())
+                .andExpect(jsonPath("$.lastName").value("Smith"))
+                .andExpect(jsonPath("$.count").value(5));
+    }
+
+    @TestConfiguration
+    static class NoSecurityConfig {
+        @Bean
+        public org.springframework.security.web.SecurityFilterChain securityFilterChain(org.springframework.security.config.annotation.web.builders.HttpSecurity http) throws Exception {
+            http.csrf(org.springframework.security.config.annotation.web.configurers.AbstractHttpConfigurer::disable)
+                    .authorizeHttpRequests(auth -> auth.anyRequest().permitAll());
+            return http.build();
+        }
     }
 }

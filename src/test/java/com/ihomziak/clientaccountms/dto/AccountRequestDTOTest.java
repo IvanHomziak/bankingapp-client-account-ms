@@ -22,13 +22,13 @@ class AccountRequestDTOTest {
         accountRequestDTO.setAccountNumber(accountNumber);
         accountRequestDTO.setAccountType(accountType);
         accountRequestDTO.setBalance(balance);
-        accountRequestDTO.setClientUUID(clientUUID);
+        accountRequestDTO.setAccountUuid(clientUUID);
 
         // Assert
         assertEquals(accountNumber, accountRequestDTO.getAccountNumber());
         assertEquals(accountType, accountRequestDTO.getAccountType());
         assertEquals(balance, accountRequestDTO.getBalance());
-        assertEquals(clientUUID, accountRequestDTO.getClientUUID());
+        assertEquals(clientUUID, accountRequestDTO.getAccountUuid());
     }
 
     @Test
@@ -41,7 +41,7 @@ class AccountRequestDTOTest {
         assertNull(accountRequestDTO.getAccountNumber());
         assertNull(accountRequestDTO.getAccountType());
         assertEquals(0.0, accountRequestDTO.getBalance());
-        assertNull(accountRequestDTO.getClientUUID());
+        assertNull(accountRequestDTO.getAccountUuid());
     }
 
     @Test
@@ -51,7 +51,7 @@ class AccountRequestDTOTest {
         accountRequestDTO.setAccountNumber("123456789012345678");
         accountRequestDTO.setAccountType(AccountType.SAVINGS);
         accountRequestDTO.setBalance(BigDecimal.valueOf(2500.75));
-        accountRequestDTO.setClientUUID("123e4567-e89b-12d3-a456-426614174000");
+        accountRequestDTO.setAccountUuid("123e4567-e89b-12d3-a456-426614174000");
 
         // Act
         String result = accountRequestDTO.toString();
@@ -71,19 +71,19 @@ class AccountRequestDTOTest {
         dto1.setAccountNumber("123456789012345678");
         dto1.setAccountType(AccountType.CHECKING);
         dto1.setBalance(BigDecimal.valueOf(1000.0));
-        dto1.setClientUUID("123e4567-e89b-12d3-a456-426614174000");
+        dto1.setAccountUuid("123e4567-e89b-12d3-a456-426614174000");
 
         AccountRequestDTO dto2 = new AccountRequestDTO();
         dto2.setAccountNumber("123456789012345678");
         dto2.setAccountType(AccountType.CHECKING);
         dto2.setBalance(BigDecimal.valueOf(1000.0));
-        dto2.setClientUUID("123e4567-e89b-12d3-a456-426614174000");
+        dto2.setAccountUuid("123e4567-e89b-12d3-a456-426614174000");
 
         AccountRequestDTO dto3 = new AccountRequestDTO();
         dto3.setAccountNumber("987654321098765432");
         dto3.setAccountType(AccountType.SAVINGS);
         dto3.setBalance(BigDecimal.valueOf(2000.0));
-        dto3.setClientUUID("987e6543-e21b-12d3-a456-426614174000");
+        dto3.setAccountUuid("987e6543-e21b-12d3-a456-426614174000");
 
         // Act & Assert
         assertEquals(dto1, dto2); // dto1 and dto2 have the same data
@@ -99,7 +99,7 @@ class AccountRequestDTOTest {
         dto.setAccountNumber("123456789012345678");
         dto.setAccountType(AccountType.CHECKING);
         dto.setBalance(BigDecimal.valueOf(1000.0));
-        dto.setClientUUID("123e4567-e89b-12d3-a456-426614174000");
+        dto.setAccountUuid("123e4567-e89b-12d3-a456-426614174000");
 
         // Act & Assert
         assertNotEquals(dto, null); // dto compared to null should return false

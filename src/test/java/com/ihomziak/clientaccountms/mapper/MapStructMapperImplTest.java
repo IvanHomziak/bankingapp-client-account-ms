@@ -117,7 +117,7 @@ class MapStructMapperImplTest {
         requestDTO.setAccountNumber("123456789");
         requestDTO.setAccountType(AccountType.CHECKING);
         requestDTO.setBalance(BigDecimal.valueOf(1000.0));
-        requestDTO.setClientUUID("client-uuid");
+        requestDTO.setAccountUuid("client-uuid");
 
         Account account = mapper.accountRequestDtoToAccount(requestDTO);
 
@@ -125,7 +125,7 @@ class MapStructMapperImplTest {
         assertEquals(requestDTO.getAccountNumber(), account.getAccountNumber());
         assertEquals(requestDTO.getAccountType(), account.getAccountType());
         assertEquals(requestDTO.getBalance(), account.getBalance());
-        assertEquals(requestDTO.getClientUUID(), account.getUUID());
+        assertEquals(requestDTO.getAccountUuid(), account.getUUID());
     }
 
     @Test
@@ -147,7 +147,6 @@ class MapStructMapperImplTest {
         AccountResponseDTO responseDTO = mapper.accountToAccountResponseDto(account);
 
         assertNotNull(responseDTO);
-        assertEquals(account.getAccountId(), responseDTO.getAccountId());
         assertEquals(account.getAccountNumber(), responseDTO.getAccountNumber());
         assertEquals(account.getAccountType(), responseDTO.getAccountType());
         assertEquals(account.getBalance(), responseDTO.getBalance());

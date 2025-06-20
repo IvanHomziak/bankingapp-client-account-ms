@@ -6,6 +6,8 @@ import java.util.List;
 import java.util.Optional;
 import java.util.UUID;
 
+import com.ihomziak.bankingapp.common.utils.AccountType;
+import com.ihomziak.clientaccountms.exception.AccountDeletionConflictException;
 import org.apache.kafka.clients.consumer.ConsumerRecord;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
@@ -56,7 +58,7 @@ public class AccountServiceImpl implements AccountService {
     @Transactional
     public AccountResponseDTO createCheckingAccount(AccountRequestDTO accountRequestDTO) {
         int maxAccountNumberOfCheckingType = 2;
-        Optional<Client> client = this.clientRepository.findClientByUUID(accountRequestDTO.getClientUUID());
+        Optional<Client> client = this.clientRepository.findClientByUUID(accountRequestDTO.getAccountUuid());
 
         if (client.isEmpty()) {
             throw new ClientNotFoundException("Client not found");
@@ -69,13 +71,13 @@ public class AccountServiceImpl implements AccountService {
         }
 
         Account theAccount = Account.builder()
-            .client(client.get())
-            .accountNumber(AccountNumberGenerator.generateBankAccountNumber())
-            .accountType(accountRequestDTO.getAccountType())
-            .balance(accountRequestDTO.getBalance())
-            .UUID(UUID.randomUUID().toString())
-            .createdAt(LocalDateTime.now())
-            .build();
+                .client(client.get())
+                .accountNumber(AccountNumberGenerator.generateBankAccountNumber())
+                .accountType(accountRequestDTO.getAccountType())
+                .balance(accountRequestDTO.getBalance())
+                .UUID(UUID.randomUUID().toString())
+                .createdAt(LocalDateTime.now())
+                .build();
 
         this.accountRepository.save(theAccount);
 
@@ -90,25 +92,56 @@ public class AccountServiceImpl implements AccountService {
     @Override
     @Transactional
     public AccountInfoDTO deleteAccount(String uuid) {
-        Optional<Account> account = this.accountRepository.findAccountByUUID(uuid);
+        Account account = accountRepository.findAccountByUUID(uuid)
+                .orElseThrow(() -> new AccountNotFoundException("Account not exist: " + uuid));
 
-        if (account.isEmpty()) {
-            throw new AccountNotFoundException("Account not exist: " + uuid);
+        String clientUUID = account.getClient().getUUID();
+        AccountType accountType = account.getAccountType();
+
+        List<Account> clientAccounts = accountRepository.findAccountsByClientUUID(clientUUID);
+
+        // Всі акаунти такого ж типу
+        List<Account> sameTypeAccounts = clientAccounts.stream()
+                .filter(acc -> acc.getAccountType().equals(accountType))
+                .toList();
+
+        if (sameTypeAccounts.size() == 1) {
+            throw new AccountDeletionConflictException("Cannot delete the only account of type: " + accountType);
         }
-        this.accountRepository.delete(account.get());
-        return mapper.accountToAccountInfoDto(account.get());
+
+        Account accountToTransferMoney = sameTypeAccounts.stream()
+                .filter(ac -> !ac.getUUID().equals(uuid))
+                .findFirst()
+                .orElseThrow(() -> new IllegalStateException("No other account of this type to transfer balance"));
+
+        // Переказ балансу
+        accountToTransferMoney.setBalance(
+                accountToTransferMoney.getBalance().add(account.getBalance())
+        );
+
+        // Зберігаємо новий баланс
+        accountRepository.save(accountToTransferMoney);
+
+        // Копіюємо DTO перед видаленням
+        AccountInfoDTO dto = mapper.accountToAccountInfoDto(account);
+
+        // Видаляємо акаунт
+        accountRepository.delete(account);
+
+        return dto;
     }
+
 
     @Override
     @Transactional
     public AccountResponseDTO updateAccount(AccountRequestDTO accountRequestDTO) {
-        Optional<Account> account = this.accountRepository.findAccountByUUID(accountRequestDTO.getClientUUID());
+        Optional<Account> account = this.accountRepository.findAccountByUUID(accountRequestDTO.getAccountUuid());
         if (account.isEmpty()) {
-            throw new AccountNotFoundException("Account number " + accountRequestDTO.getAccountNumber() + " not exist: " + accountRequestDTO.getClientUUID());
+            throw new AccountNotFoundException("Account number " + accountRequestDTO.getAccountNumber() + " not exist: " + accountRequestDTO.getAccountUuid());
         }
 
         Account theAccount = account.get();
-        Optional<Client> theClient = this.clientRepository.findClientByUUID(accountRequestDTO.getClientUUID());
+        Optional<Client> theClient = this.clientRepository.findClientByUUID(accountRequestDTO.getAccountUuid());
         if (theClient.isEmpty()) {
             throw new ClientNotFoundException("Client not found");
         }
@@ -129,11 +162,10 @@ public class AccountServiceImpl implements AccountService {
         if (accountList.isEmpty()) {
             throw new AccountNotFoundException("Accounts not found exception");
         }
-        List<AccountInfoDTO> accountInfoDTOList = new ArrayList<>();
-        for (Account account : accountList) {
-            accountInfoDTOList.add(mapper.accountToAccountInfoDto(account));
-        }
-        return accountInfoDTOList;
+
+        return accountList.stream()
+                .map(mapper::accountToAccountInfoDto)
+                .toList();
     }
 
     @Override

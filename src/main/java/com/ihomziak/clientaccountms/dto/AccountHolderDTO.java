@@ -1,13 +1,7 @@
 package com.ihomziak.clientaccountms.dto;
 
-import lombok.AllArgsConstructor;
-import lombok.Builder;
-import lombok.Data;
-import lombok.NoArgsConstructor;
-import lombok.Setter;
-import lombok.Getter;
-
-import java.util.Objects;
+import jakarta.validation.constraints.NotBlank;
+import lombok.*;
 
 @Data
 @Builder
@@ -15,7 +9,12 @@ import java.util.Objects;
 @NoArgsConstructor
 public class AccountHolderDTO {
 
+    @NotBlank(message = "UUID must not be blank")
     private String UUID;
+
+    @NotBlank(message = "First name must not be blank")
     private String firstName;
+
+    @NotBlank(message = "Last name must not be blank")
     private String lastName;
 }

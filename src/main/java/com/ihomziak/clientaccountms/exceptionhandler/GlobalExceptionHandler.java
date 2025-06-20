@@ -28,7 +28,8 @@ public class GlobalExceptionHandler {
             AccountNotFoundException.class,
             AccountAlreadyExistException.class,
             ClientAlreadyExistException.class,
-            AccountNumberQuantityException.class
+            AccountNumberQuantityException.class,
+            AccountDeletionConflictException.class
     })
     @Nullable
     public final ResponseEntity<ErrorDTO> handleException(Exception ex, WebRequest request) {
@@ -53,8 +54,12 @@ public class GlobalExceptionHandler {
             return handleException(accountException, headers, status, request);
 
         } else if (ex instanceof AccountNumberQuantityException quantityException) {
-            HttpStatus status = HttpStatus.FORBIDDEN; // 403 Forbidden
+            HttpStatus status = HttpStatus.FORBIDDEN;
             return handleException(quantityException, headers, status, request);
+
+        } else if (ex instanceof AccountDeletionConflictException accountDeletionConflictException) {
+                HttpStatus status = HttpStatus.CONFLICT;
+                return handleException(accountDeletionConflictException, headers, status, request);
 
         } else if (ex instanceof NonSufficientFundsException balanceException) {
             HttpStatus status = HttpStatus.BAD_REQUEST;

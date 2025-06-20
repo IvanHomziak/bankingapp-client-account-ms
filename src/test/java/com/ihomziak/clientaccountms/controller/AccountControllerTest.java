@@ -10,6 +10,7 @@ import com.ihomziak.clientaccountms.dto.AccountHolderDTO;
 import com.ihomziak.clientaccountms.dto.AccountInfoDTO;
 import com.ihomziak.clientaccountms.dto.AccountRequestDTO;
 import com.ihomziak.clientaccountms.dto.AccountResponseDTO;
+import com.ihomziak.clientaccountms.exception.AccountDeletionConflictException;
 import com.ihomziak.clientaccountms.exception.AccountNotFoundException;
 import com.ihomziak.clientaccountms.exception.ClientNotFoundException;
 import com.ihomziak.clientaccountms.exceptionhandler.GlobalExceptionHandler;
@@ -63,8 +64,6 @@ class AccountControllerTest {
     private AccountRequestDTO accountRequestDTO;
     private AccountHolderDTO accountHolder;
     private AccountInfoDTO accountInfoDTO;
-    @Autowired
-    private PathMatcher mvcPathMatcher;
 
     @BeforeEach
     void setUp() {
@@ -78,10 +77,10 @@ class AccountControllerTest {
         accountRequestDTO.setAccountNumber(faker.finance().iban());
         accountRequestDTO.setAccountType(AccountType.CHECKING);
         accountRequestDTO.setBalance(BigDecimal.valueOf(faker.number().numberBetween(100, 10000)));
-        accountRequestDTO.setClientUUID(faker.internet().uuid());
+        accountRequestDTO.setAccountUuid(faker.internet().uuid());
 
         accountHolder = new AccountHolderDTO();
-        accountHolder.setUUID(accountRequestDTO.getClientUUID());
+        accountHolder.setUUID(accountRequestDTO.getAccountUuid());
         accountHolder.setFirstName(faker.name().firstName());
         accountHolder.setLastName(faker.name().lastName());
 
@@ -131,8 +130,8 @@ class AccountControllerTest {
     @Test
     void createCheckingAccount_whenClientNotExist_ShouldReturnClientNotFoundException() throws Exception {
         // Arrange
-        accountRequestDTO.setClientUUID(UUID.randomUUID().toString());
-        String errorMessage = "Client not found: " + accountRequestDTO.getClientUUID();
+        accountRequestDTO.setAccountUuid(UUID.randomUUID().toString());
+        String errorMessage = "Client not found: " + accountRequestDTO.getAccountUuid();
         when(accountService.createCheckingAccount(any(AccountRequestDTO.class)))
                 .thenThrow(new ClientNotFoundException(errorMessage));
 
@@ -155,19 +154,19 @@ class AccountControllerTest {
         accountRequestDTO.setAccountNumber(faker.finance().iban());
         accountRequestDTO.setAccountType(AccountType.CHECKING);
         accountRequestDTO.setBalance(BigDecimal.valueOf(faker.number().numberBetween(10000, 10000)));
-        accountRequestDTO.setClientUUID(faker.internet().uuid());
+        accountRequestDTO.setAccountUuid(faker.internet().uuid());
 
-        accountRequestDTO.setClientUUID(UUID.randomUUID().toString());
+        accountRequestDTO.setAccountUuid(UUID.randomUUID().toString());
         AccountInfoDTO expectedResponse = new AccountInfoDTO();
         expectedResponse.setAccountNumber(accountRequestDTO.getAccountNumber());
         expectedResponse.setBalance(accountRequestDTO.getBalance());
         expectedResponse.setUUID(UUID.randomUUID().toString());
         expectedResponse.setAccountType(accountRequestDTO.getAccountType());
-        when(accountService.findAccountByUuid(accountRequestDTO.getClientUUID()))
+        when(accountService.findAccountByUuid(accountRequestDTO.getAccountUuid()))
                 .thenReturn(expectedResponse);
 
         // Act
-        MvcResult result = mockMvc.perform(get(API_ACCOUNT_V1 + GET_ACCOUNT, accountRequestDTO.getClientUUID())
+        MvcResult result = mockMvc.perform(get(API_ACCOUNT_V1 + GET_ACCOUNT, accountRequestDTO.getAccountUuid())
                         .contentType(MediaType.APPLICATION_JSON)
                         .accept(MediaType.APPLICATION_JSON)
                 )
@@ -214,9 +213,9 @@ class AccountControllerTest {
         accountRequestDTO.setAccountNumber(faker.finance().iban());
         accountRequestDTO.setAccountType(AccountType.CHECKING);
         accountRequestDTO.setBalance(BigDecimal.valueOf(faker.number().numberBetween(10000, 10000)));
-        accountRequestDTO.setClientUUID(faker.internet().uuid());
+        accountRequestDTO.setAccountUuid(faker.internet().uuid());
 
-        accountRequestDTO.setClientUUID(UUID.randomUUID().toString());
+        accountRequestDTO.setAccountUuid(UUID.randomUUID().toString());
         AccountInfoDTO expectedResponse = new AccountInfoDTO();
         expectedResponse.setAccountNumber(accountRequestDTO.getAccountNumber());
         expectedResponse.setBalance(accountRequestDTO.getBalance());
@@ -302,22 +301,235 @@ class AccountControllerTest {
         Assertions.assertEquals(errorMessage, error.getError(), "Account not found error message");
     }
 
+
     @Test
-    void createCheckingAccount() {
+    void deleteAccount_whenAccountExists_shouldReturnAcceptedAndDto() throws Exception {
+        // given
+        String uuid = UUID.randomUUID().toString();
+        AccountInfoDTO dto = new AccountInfoDTO();
+        dto.setUUID(uuid);
+        dto.setBalance(BigDecimal.valueOf(1000));
+        dto.setAccountNumber(faker.finance().iban());
+        dto.setAccountType(AccountType.CHECKING);
+
+        when(accountService.deleteAccount(uuid)).thenReturn(dto);
+
+        // when
+        MvcResult result = mockMvc.perform(delete(API_ACCOUNT_V1 + DELETE_ACCOUNT, uuid)
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .accept(MediaType.APPLICATION_JSON))
+                .andExpect(status().isAccepted())
+                .andReturn();
+
+        // then
+        String responseBody = result.getResponse().getContentAsString();
+        int statusCode = result.getResponse().getStatus();
+        AccountInfoDTO actual = objectMapper.readValue(responseBody, AccountInfoDTO.class);
+
+        Assertions.assertEquals(HttpStatus.ACCEPTED.value(), statusCode, "Account not found status code mismatch");
+        Assertions.assertEquals(dto.getBalance(), actual.getBalance(), "Account balance mismatch");
+        Assertions.assertEquals(dto.getAccountNumber(), actual.getAccountNumber(), "Account number mismatch");
+        Assertions.assertEquals(dto.getAccountType(), actual.getAccountType(), "Account type mismatch");
     }
 
     @Test
-    void deleteAccount() {
+    void deleteAccount_whenAccountNotFound_shouldReturn404() throws Exception {
+        // given
+        String uuid = UUID.randomUUID().toString();
+        String expectedErrorMessage = "Account not found: " + uuid;
+
+        when(accountService.deleteAccount(uuid))
+                .thenThrow(new AccountNotFoundException(expectedErrorMessage));
+
+        // when
+        MvcResult result = mockMvc.perform(delete(API_ACCOUNT_V1 + DELETE_ACCOUNT, uuid)
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .accept(MediaType.APPLICATION_JSON))
+                .andExpect(status().isNotFound())
+                .andReturn();
+
+        // then
+        String responseBody = result.getResponse().getContentAsString();
+        int statusCode = result.getResponse().getStatus();
+        ErrorDTO errorDTO = objectMapper.readValue(responseBody, ErrorDTO.class);
+
+        Assertions.assertEquals(HttpStatus.NOT_FOUND.value(), statusCode, "Status code should be 404");
+        Assertions.assertEquals(expectedErrorMessage, errorDTO.getError(), "Error message mismatch");
     }
 
     @Test
-    void updateAccount() {
+    void deleteAccount_whenOnlyAccountOfType_shouldReturn409() throws Exception {
+        // given
+        String uuid = UUID.randomUUID().toString();
+        String expectedErrorMessage = "Cannot delete the only account of this type.";
+
+        when(accountService.deleteAccount(uuid))
+                .thenThrow(new AccountDeletionConflictException(expectedErrorMessage));
+
+        // when
+        MvcResult result = mockMvc.perform(delete(API_ACCOUNT_V1 + DELETE_ACCOUNT, uuid)
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .accept(MediaType.APPLICATION_JSON))
+                .andExpect(status().isConflict())
+                .andReturn();
+
+        // then
+        String responseBody = result.getResponse().getContentAsString();
+        int statusCode = result.getResponse().getStatus();
+        ErrorDTO errorDTO = objectMapper.readValue(responseBody, ErrorDTO.class);
+
+        Assertions.assertEquals(HttpStatus.CONFLICT.value(), statusCode, "Status code should be 409");
+        Assertions.assertEquals(expectedErrorMessage, errorDTO.getError(), "Error message mismatch");
     }
 
     @Test
-    void getAccounts() {
+    void updateAccount_whenValidRequest_shouldReturnAccepted() throws Exception {
+        // given
+        AccountRequestDTO request = new AccountRequestDTO();
+        request.setAccountUuid(UUID.randomUUID().toString());
+        request.setAccountNumber(faker.finance().iban());
+        request.setAccountType(AccountType.SAVINGS);
+        request.setBalance(BigDecimal.valueOf(1500));
+
+        AccountResponseDTO response = new AccountResponseDTO();
+        response.setUUID(UUID.randomUUID().toString());
+        response.setAccountNumber(request.getAccountNumber());
+        response.setAccountType(request.getAccountType());
+        response.setBalance(request.getBalance());
+        response.setCreatedAt(LocalDateTime.now().minusDays(1));
+        response.setLastUpdated(LocalDateTime.now());
+
+        when(accountService.updateAccount(any())).thenReturn(response);
+
+        // when
+        MvcResult result = mockMvc.perform(patch(API_ACCOUNT_V1)
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .content(objectMapper.writeValueAsString(request))
+                        .accept(MediaType.APPLICATION_JSON))
+                .andExpect(status().isAccepted())
+                .andReturn();
+
+        // then
+        AccountResponseDTO actual = objectMapper.readValue(result.getResponse().getContentAsString(), AccountResponseDTO.class);
+        Assertions.assertEquals(request.getAccountNumber(), actual.getAccountNumber(), "Account number mismatch");
+        Assertions.assertEquals(request.getAccountType(), actual.getAccountType(), "Account type mismatch");
+        Assertions.assertEquals(request.getBalance(), actual.getBalance(), "Balance mismatch");
     }
 
+    @Test
+    void updateAccount_whenAccountNotFound_shouldReturn404() throws Exception {
+        // given
+        AccountRequestDTO request = new AccountRequestDTO();
+        request.setAccountUuid(UUID.randomUUID().toString());
+        request.setAccountNumber(faker.finance().iban());
+        request.setAccountType(AccountType.CHECKING);
+        request.setBalance(BigDecimal.valueOf(2000));
+
+        String errorMessage = "Account number " + request.getAccountNumber() + " not exist: " + request.getAccountUuid();
+        when(accountService.updateAccount(any())).thenThrow(new AccountNotFoundException(errorMessage));
+
+        // when
+        MvcResult result = mockMvc.perform(patch(API_ACCOUNT_V1)
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .content(objectMapper.writeValueAsString(request))
+                        .accept(MediaType.APPLICATION_JSON))
+                .andExpect(status().isNotFound())
+                .andReturn();
+
+        ErrorDTO error = objectMapper.readValue(result.getResponse().getContentAsString(), ErrorDTO.class);
+        Assertions.assertEquals(errorMessage, error.getError(), "Error message mismatch");
+    }
+
+    @Test
+    void updateAccount_whenClientNotFound_shouldReturn404() throws Exception {
+        // given
+        AccountRequestDTO request = new AccountRequestDTO();
+        request.setAccountUuid(UUID.randomUUID().toString());
+        request.setAccountNumber(faker.finance().iban());
+        request.setAccountType(AccountType.SAVINGS);
+        request.setBalance(BigDecimal.valueOf(3000));
+
+        when(accountService.updateAccount(any())).thenThrow(new ClientNotFoundException("Client not found"));
+
+        // when
+        MvcResult result = mockMvc.perform(patch(API_ACCOUNT_V1)
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .content(objectMapper.writeValueAsString(request))
+                        .accept(MediaType.APPLICATION_JSON))
+                .andExpect(status().isNotFound())
+                .andReturn();
+
+        ErrorDTO error = objectMapper.readValue(result.getResponse().getContentAsString(), ErrorDTO.class);
+        Assertions.assertEquals("Client not found", error.getError(), "Error message mismatch");
+    }
+
+    @Test
+    void updateAccount_whenInvalidRequest_shouldReturn400() throws Exception {
+        // given: empty request body
+        String emptyBody = "{}";
+
+        // when & then
+        mockMvc.perform(patch(API_ACCOUNT_V1)
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .content(emptyBody)
+                        .accept(MediaType.APPLICATION_JSON))
+                .andExpect(status().isBadRequest());
+    }
+
+    @Test
+    void getAccounts_whenAccountsExist_shouldReturnListOfAccounts() throws Exception {
+        // given
+        AccountInfoDTO dto1 = AccountInfoDTO.builder()
+                .UUID(UUID.randomUUID().toString())
+                .accountNumber(faker.finance().iban())
+                .balance(BigDecimal.valueOf(1000))
+                .accountType(AccountType.CHECKING)
+                .build();
+
+        AccountInfoDTO dto2 = AccountInfoDTO.builder()
+                .UUID(UUID.randomUUID().toString())
+                .accountNumber(faker.finance().iban())
+                .balance(BigDecimal.valueOf(2000))
+                .accountType(AccountType.SAVINGS)
+                .build();
+
+        when(accountService.findAllAccounts()).thenReturn(List.of(dto1, dto2));
+
+        // when
+        MvcResult result = mockMvc.perform(get(API_ACCOUNT_V1)
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .accept(MediaType.APPLICATION_JSON))
+                .andExpect(status().isOk())
+                .andReturn();
+
+        // then
+        String responseBody = result.getResponse().getContentAsString();
+        List<AccountInfoDTO> actual = objectMapper.readValue(responseBody,
+                objectMapper.getTypeFactory().constructCollectionType(List.class, AccountInfoDTO.class));
+
+        Assertions.assertEquals(2, actual.size());
+        Assertions.assertEquals(dto1.getAccountNumber(), actual.get(0).getAccountNumber());
+        Assertions.assertEquals(dto2.getBalance(), actual.get(1).getBalance());
+    }
+
+    @Test
+    void getAccounts_whenNoAccountsExist_shouldReturn404() throws Exception {
+        // given
+        when(accountService.findAllAccounts()).thenThrow(new AccountNotFoundException("Accounts not found"));
+
+        // when
+        MvcResult result = mockMvc.perform(get(API_ACCOUNT_V1)
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .accept(MediaType.APPLICATION_JSON))
+                .andExpect(status().isNotFound())
+                .andReturn();
+
+        // then
+        String responseBody = result.getResponse().getContentAsString();
+        ErrorDTO errorDTO = objectMapper.readValue(responseBody, ErrorDTO.class);
+
+        Assertions.assertEquals("Accounts not found", errorDTO.getError());
+    }
 
     @TestConfiguration
     static class NoSecurityConfig {

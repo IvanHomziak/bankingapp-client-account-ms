@@ -79,7 +79,6 @@ public class MapStructMapperImpl implements MapStructMapper {
         accountHolderDTO.setLastName(account.getClient().getLastName());
         accountHolderDTO.setUUID(account.getClient().getUUID());
 
-        accountResponseDTO.setAccountId(account.getAccountId());
         accountResponseDTO.setAccountHolderDTO(accountHolderDTO);
         accountResponseDTO.setBalance(account.getBalance());
         accountResponseDTO.setAccountNumber(account.getAccountNumber());
@@ -111,7 +110,7 @@ public class MapStructMapperImpl implements MapStructMapper {
         account.setAccountNumber(accountRequestDTO.getAccountNumber());
         account.setAccountType(accountRequestDTO.getAccountType());
         account.setBalance(accountRequestDTO.getBalance());
-        account.setUUID(accountRequestDTO.getClientUUID());
+        account.setUUID(accountRequestDTO.getAccountUuid());
 
         return account;
     }
