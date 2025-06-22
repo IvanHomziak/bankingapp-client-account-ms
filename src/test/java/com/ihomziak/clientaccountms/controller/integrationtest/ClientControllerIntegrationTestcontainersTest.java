@@ -13,7 +13,11 @@ import org.json.JSONObject;
 import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.DisplayName;
+import org.junit.jupiter.api.MethodOrderer;
+import org.junit.jupiter.api.Order;
 import org.junit.jupiter.api.Test;
+import org.junit.jupiter.api.TestInstance;
+import org.junit.jupiter.api.TestMethodOrder;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.boot.test.web.client.TestRestTemplate;
@@ -45,6 +49,8 @@ import net.datafaker.Faker;
 	})
 @Import(TestSecurityConfig.class)
 @Testcontainers
+@TestInstance(TestInstance.Lifecycle.PER_CLASS)
+@TestMethodOrder(MethodOrderer.OrderAnnotation.class)
 public class ClientControllerIntegrationTestcontainersTest {
 
 	@MockitoBean
@@ -67,8 +73,14 @@ public class ClientControllerIntegrationTestcontainersTest {
 //		registry.add("spring.datasource.url", mySQLContainer::getJdbcUrl);
 //		registry.add("spring.datasource.username", mySQLContainer::getUsername);
 //		registry.add("spring.datasource.password", mySQLContainer::getPassword);
-//	}
+//		}
 
+	@BeforeEach
+	public void setUp() {
+		faker = new Faker();
+	}
+
+	@Order(1)
 	@Test
 	@DisplayName("The MySQL container is created, and is running")
 	public void testTestContainerIsRunning() {
@@ -76,11 +88,7 @@ public class ClientControllerIntegrationTestcontainersTest {
 		Assertions.assertTrue(mySQLContainer.isRunning(), "The MySQL container has not been running"); // Placeholder assertion
 	}
 
-	@BeforeEach
-	public void setUp() {
-		faker = new Faker();
-	}
-
+	@Order(2)
 	@Test
 	@DisplayName("Client can be created with valid details")
 	public void testCreateClient_whenValidDetailsProvided_shouldReturnUserDetails() throws JSONException {
@@ -148,10 +156,10 @@ public class ClientControllerIntegrationTestcontainersTest {
 		}
 	}
 
-
+	@Order(3)
 	@Test
 	@DisplayName("Created user can be updated")
-	public void testUpdateClient_whenValidDetailsProvided_returnsClientDetails() throws JSONException {
+	public void testUpdateClient_whenValidDetailsProvided_returnsClientDetails() {
 		// Arrange
 		String taxNumber = faker.phoneNumber().phoneNumber();
 		ClientRequestDTO body = ClientRequestDTO.builder()
@@ -276,18 +284,20 @@ public class ClientControllerIntegrationTestcontainersTest {
 		}
 	}
 
+	@Order(4)
 	@Test
 	@DisplayName("Created user can be deleted")
 	public void testDeleteClient_whenValidDetailsProvided_returnsClientDetails() throws JSONException {
 		// Arrange
+		String taxNumber = faker.phoneNumber().phoneNumber();
 		JSONObject userDetailsRequestObject = new JSONObject();
 		userDetailsRequestObject.put("firstName", faker.name().firstName());
 		userDetailsRequestObject.put("lastName", faker.name().lastName());
 		userDetailsRequestObject.put("dateOfBirth", "1990-01-01");
-		userDetailsRequestObject.put("taxNumber", "1234567890");
+		userDetailsRequestObject.put("taxNumber", taxNumber);
 		userDetailsRequestObject.put("email", faker.internet().emailAddress());
 		userDetailsRequestObject.put("phoneNumber", faker.phoneNumber().phoneNumber());
-		userDetailsRequestObject.put("address", "123 Main St, Springfield");
+		userDetailsRequestObject.put("address", faker.address().streetAddress());
 
 		HttpHeaders httpHeaders = new HttpHeaders();
 		httpHeaders.setContentType(MediaType.APPLICATION_JSON);

@@ -25,7 +25,6 @@ public class ClientController {
     @Autowired
     public ClientController(ClientService clientService) {
         this.clientService = clientService;
-
     }
 
     @PostMapping(ADD_CLIENT)
@@ -61,7 +60,6 @@ public class ClientController {
 
         return ResponseEntity.status(HttpStatus.OK).body(result);
     }
-
 
     @DeleteMapping(DELETE_CLIENT)
     public ResponseEntity<ClientResponseDTO> deleteClient(@PathVariable String uuid) {
