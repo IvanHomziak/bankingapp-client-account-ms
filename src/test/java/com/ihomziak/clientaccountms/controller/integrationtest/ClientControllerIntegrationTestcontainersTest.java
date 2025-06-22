@@ -5,6 +5,7 @@ import static com.ihomziak.clientaccountms.util.constants.Endpoints.ClientEndpoi
 
 import java.util.Arrays;
 
+import org.assertj.core.api.AutoCloseableSoftAssertions;
 import org.json.JSONException;
 import org.json.JSONObject;
 import org.junit.jupiter.api.Assertions;
@@ -104,16 +105,42 @@ public class ClientControllerIntegrationTestcontainersTest {
 		ClientResponseDTO createdUserDetails = createdUserDetailsEntity.getBody();
 
 		// Assert
-		Assertions.assertNotNull(createdUserDetails, "Created user details should not be null");
-		Assertions.assertEquals(HttpStatus.CREATED, createdUserDetailsEntity.getStatusCode(), "Response status should be CREATED");
-		Assertions.assertNotNull(createdUserDetails.getUUID(), "Created user UUID should not be null");
-		Assertions.assertEquals(userDetailsRequestObject.get("firstName"), createdUserDetails.getFirstName(), "First name should match");
-		Assertions.assertEquals(userDetailsRequestObject.get("lastName"), createdUserDetails.getLastName(), "Last name should match");
-		Assertions.assertEquals(userDetailsRequestObject.get("dateOfBirth"), createdUserDetails.getDateOfBirth(), "Date of birth should match");
-		Assertions.assertEquals(userDetailsRequestObject.get("taxNumber"), createdUserDetails.getTaxNumber(), "Tax number should match");
-		Assertions.assertEquals(userDetailsRequestObject.get("email"), createdUserDetails.getEmail(), "Email should match");
-		Assertions.assertEquals(userDetailsRequestObject.get("phoneNumber"), createdUserDetails.getPhoneNumber(), "Phone number should match");
-		Assertions.assertEquals(userDetailsRequestObject.get("address"), createdUserDetails.getAddress(), "Address should match");
+		try (AutoCloseableSoftAssertions softly = new AutoCloseableSoftAssertions()) {
+			softly.assertThat(createdUserDetailsEntity.getStatusCode())
+				.as("Response status should be CREATED")
+				.isEqualTo(HttpStatus.CREATED);
 
+			softly.assertThat(createdUserDetails.getUUID())
+				.as("Created user UUID should not be null")
+				.isNotNull();
+
+			softly.assertThat(createdUserDetails.getFirstName())
+				.as("First name should match")
+				.isEqualTo(userDetailsRequestObject.get("firstName"));
+
+			softly.assertThat(createdUserDetails.getLastName())
+				.as("Last name should match")
+				.isEqualTo(userDetailsRequestObject.get("lastName"));
+
+			softly.assertThat(createdUserDetails.getDateOfBirth())
+				.as("Date of birth should match")
+				.isEqualTo(userDetailsRequestObject.get("dateOfBirth"));
+
+			softly.assertThat(createdUserDetails.getTaxNumber())
+				.as("Tax number should match")
+				.isEqualTo(userDetailsRequestObject.get("taxNumber"));
+
+			softly.assertThat(createdUserDetails.getEmail())
+				.as("Email should match")
+				.isEqualTo(userDetailsRequestObject.get("email"));
+
+			softly.assertThat(createdUserDetails.getPhoneNumber())
+				.as("Phone number should match")
+				.isEqualTo(userDetailsRequestObject.get("phoneNumber"));
+
+			softly.assertThat(createdUserDetails.getAddress())
+				.as("Address should match")
+				.isEqualTo(userDetailsRequestObject.get("address"));
+		}
 	}
 }
