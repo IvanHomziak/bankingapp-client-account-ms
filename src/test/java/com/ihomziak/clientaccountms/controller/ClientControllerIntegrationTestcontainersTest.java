@@ -32,11 +32,6 @@ public class ClientControllerIntegrationTestcontainersTest {
 	@Test
 	@DisplayName("The MySQL container is created, and is running")
 	public void testTestContainerIsRunning() {
-		// This test will run with MySQL container
-		// Implement the test logic here
-		// For example, you can use TestRestTemplate to send a request to the API
-		// and verify the response.
-		// Note: The actual implementation of the test logic is not provided here.
 		Assertions.assertTrue(mySQLContainer.isCreated(), "The MySQL container has not been created"); // Placeholder assertion
 		Assertions.assertTrue(mySQLContainer.isRunning(), "The MySQL container has not been running"); // Placeholder assertion
 	}
