@@ -153,6 +153,8 @@ public class ClientControllerIntegrationTestcontainersTest {
 			softly.assertThat(createdUserDetails.getAddress())
 				.as("Address should match")
 				.isEqualTo(userDetailsRequestObject.get("address"));
+
+			softly.assertAll();
 		}
 	}
 
@@ -222,6 +224,8 @@ public class ClientControllerIntegrationTestcontainersTest {
 			softly.assertThat(createdUserDetails.getAddress())
 				.as("Address should match")
 				.isEqualTo(body.getAddress());
+
+			softly.assertAll();
 		}
 
 		// Arrange
@@ -281,6 +285,8 @@ public class ClientControllerIntegrationTestcontainersTest {
 			softly.assertThat(createdUserDetails.getAddress())
 				.as("Address should match")
 				.isEqualTo(body.getAddress());
+
+			softly.assertAll();
 		}
 	}
 
@@ -359,6 +365,8 @@ public class ClientControllerIntegrationTestcontainersTest {
 			softly.assertThat(createdUserDetails.getAddress())
 				.as("Address should match")
 				.isEqualTo(userDetailsRequestObject.get("address"));
+
+			softly.assertAll();
 		}
 	}
 }
