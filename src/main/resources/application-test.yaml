@@ -1,28 +1,12 @@
 spring:
   datasource:
-    url: jdbc:h2:mem:test;MODE=MySQL;
+    url: jdbc:h2:mem:clients_db;DB_CLOSE_DELAY=-1;MODE=MySQL
     driver-class-name: org.h2.Driver
-    username: ""
-    password: ""
+    username: root
+    password: admin1234
   jpa:
-    database-platform: org.hibernate.dialect.MySQLDialect
-    defer-datasource-initialization: true
     hibernate:
-      ddl-auto: update
-      naming:
-        implicit-strategy: org.hibernate.boot.model.naming.ImplicitNamingStrategyLegacyJpaImpl
-        physical-strategy: org.hibernate.boot.model.naming.PhysicalNamingStrategyStandardImpl
-      naming-strategy: org.hibernate.cfg.ImprovedNamingStrategy
-    properties:
-      hibernate:
-        format_sql: true
-  h2:
-    console:
-      enabled: true
-  sql:
-    init:
-      mode: always
-
-
+      ddl-auto: create-drop
+    show-sql: true
   flyway:
-    enabled: false  # Optionally disable Flyway for H2 tests if your scripts aren't compatible
+    enabled: false
