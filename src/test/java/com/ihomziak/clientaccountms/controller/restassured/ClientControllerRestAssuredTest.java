@@ -98,7 +98,6 @@ public class ClientControllerRestAssuredTest {
 			.as(ClientResponseDTO.class);
 
 		try (AutoCloseableSoftAssertions softly = new AutoCloseableSoftAssertions()) {
-			//			softly.assertThat(response.get)
 			softly.assertThat(response.getClientId())
 				.as("Client ID")
 				.isNotNull();
