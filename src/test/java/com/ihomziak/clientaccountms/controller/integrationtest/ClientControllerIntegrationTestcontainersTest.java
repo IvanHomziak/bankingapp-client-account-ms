@@ -34,7 +34,7 @@ import org.testcontainers.containers.MySQLContainer;
 import org.testcontainers.junit.jupiter.Container;
 import org.testcontainers.junit.jupiter.Testcontainers;
 
-import com.ihomziak.clientaccountms.controller.integrationtest.config.TestSecurityConfig;
+import com.ihomziak.clientaccountms.controller.security.config.TestSecurityConfig;
 import com.ihomziak.clientaccountms.dto.ClientRequestDTO;
 import com.ihomziak.clientaccountms.dto.ClientResponseDTO;
 

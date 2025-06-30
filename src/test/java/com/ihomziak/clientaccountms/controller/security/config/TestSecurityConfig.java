@@ -1,4 +1,4 @@
-package com.ihomziak.clientaccountms.controller.integrationtest.config;
+package com.ihomziak.clientaccountms.controller.security.config;
 
 import org.springframework.boot.test.context.TestConfiguration;
 import org.springframework.context.annotation.Bean;
